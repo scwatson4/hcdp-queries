@@ -1,0 +1,135 @@
+{
+  "question_id": "e0c6bb90-4b6c-4e6f-bc30-c396cbaf593d",
+  "question_nl": "What was Oahu's driest calendar year on record in this database? Does that match the US Drought Monitor's assessment for that year?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T03:00:00Z",
+  "gold_sql": "CREATE TEMP TABLE oahu_skns (skn text);\nCOPY oahu_skns FROM '/tmp/oahu_skns.txt';\n\nWITH panel_with_2022 AS (\n  SELECT DISTINCT p.station_id\n  FROM (\n    SELECT h.station_id\n    FROM historical_station_values h\n    JOIN oahu_skns o ON o.skn = h.station_id\n    WHERE h.datatype = 'rainfall'\n      AND EXTRACT(YEAR FROM h.date) BETWEEN 2000 AND 2025\n    GROUP BY h.station_id\n    HAVING COUNT(DISTINCT EXTRACT(YEAR FROM h.date)) >= 20\n  ) p\n  JOIN historical_station_values h ON h.station_id = p.station_id\n  WHERE h.datatype = 'rainfall' AND EXTRACT(YEAR FROM h.date) = 2022\n),\nyearly AS (\n  SELECT\n    EXTRACT(YEAR FROM h.date)::int AS year,\n    COUNT(DISTINCT h.station_id) AS stations_reporting,\n    ROUND(AVG(h.value)::numeric, 1) AS avg_monthly_mm,\n    ROUND((AVG(h.value) * 12)::numeric, 0) AS est_annual_mm,\n    ROUND((AVG(h.value) * 12 / 25.4)::numeric, 1) AS est_annual_in\n  FROM historical_station_values h\n  JOIN panel_with_2022 p ON p.station_id = h.station_id\n  WHERE h.datatype = 'rainfall'\n    AND EXTRACT(YEAR FROM h.date) BETWEEN 2000 AND 2025\n  GROUP BY EXTRACT(YEAR FROM h.date)\n)\nSELECT year, stations_reporting, avg_monthly_mm, est_annual_mm, est_annual_in,\n  RANK() OVER (ORDER BY est_annual_mm ASC) AS dry_rank\nFROM yearly\nORDER BY est_annual_mm ASC;",
+  "gold_result_hash": "7c88444ca0d0d21d0572c602ad95a260b4691e071f918b25454d47fe0e3c48f2",
+  "gold_result_preview": [
+    {
+      "year": "2022",
+      "stations_reporting": "41",
+      "avg_monthly_mm": "82.1",
+      "est_annual_mm": "985",
+      "est_annual_in": "38.8",
+      "dry_rank": "1"
+    },
+    {
+      "year": "2000",
+      "stations_reporting": "40",
+      "avg_monthly_mm": "93.9",
+      "est_annual_mm": "1127",
+      "est_annual_in": "44.4",
+      "dry_rank": "2"
+    },
+    {
+      "year": "2012",
+      "stations_reporting": "40",
+      "avg_monthly_mm": "97.4",
+      "est_annual_mm": "1169",
+      "est_annual_in": "46.0",
+      "dry_rank": "3"
+    },
+    {
+      "year": "2025",
+      "stations_reporting": "38",
+      "avg_monthly_mm": "97.9",
+      "est_annual_mm": "1175",
+      "est_annual_in": "46.3",
+      "dry_rank": "4"
+    },
+    {
+      "year": "2001",
+      "stations_reporting": "40",
+      "avg_monthly_mm": "99.8",
+      "est_annual_mm": "1198",
+      "est_annual_in": "47.2",
+      "dry_rank": "5"
+    },
+    {
+      "year": "2017",
+      "stations_reporting": "41",
+      "avg_monthly_mm": "100.2",
+      "est_annual_mm": "1202",
+      "est_annual_in": "47.3",
+      "dry_rank": "6"
+    },
+    {
+      "year": "2024",
+      "stations_reporting": "38",
+      "avg_monthly_mm": "104.1",
+      "est_annual_mm": "1249",
+      "est_annual_in": "49.2",
+      "dry_rank": "7"
+    },
+    {
+      "year": "2009",
+      "stations_reporting": "41",
+      "avg_monthly_mm": "109.0",
+      "est_annual_mm": "1309",
+      "est_annual_in": "51.5",
+      "dry_rank": "8"
+    },
+    {
+      "year": "2020",
+      "stations_reporting": "40",
+      "avg_monthly_mm": "109.9",
+      "est_annual_mm": "1319",
+      "est_annual_in": "51.9",
+      "dry_rank": "9"
+    },
+    {
+      "year": "2016",
+      "stations_reporting": "40",
+      "avg_monthly_mm": "115.9",
+      "est_annual_mm": "1391",
+      "est_annual_in": "54.8",
+      "dry_rank": "10"
+    }
+  ],
+  "draft_sql": "-- ============================================================================\n-- NAIVE VERSION (do not use): produces biased result, see narrative.md\n-- Uses all reporting stations per year, but station count dropped from ~125\n-- (2019) to 54 (2022) due to COOP network attrition, making cross-year\n-- comparisons unreliable.\n-- ============================================================================\n--\n-- CREATE TEMP TABLE oahu_skns (skn text);\n-- COPY oahu_skns FROM '/tmp/oahu_skns.txt';  -- 760 Oahu SKNs from API metadata\n--\n-- SELECT\n--   EXTRACT(YEAR FROM h.date)::int AS year,\n--   COUNT(DISTINCT h.station_id) AS stations,\n--   ROUND(AVG(h.value)::numeric, 1) AS avg_monthly_mm,\n--   ROUND((AVG(h.value) * 12)::numeric, 0) AS est_annual_mm,\n--   ROUND((AVG(h.value) * 12 / 25.4)::numeric, 1) AS est_annual_in\n-- FROM historical_station_values h\n-- JOIN oahu_skns o ON o.skn = h.station_id\n-- WHERE h.datatype = 'rainfall'\n-- GROUP BY EXTRACT(YEAR FROM h.date)\n-- HAVING COUNT(DISTINCT h.station_id) >= 10\n-- ORDER BY AVG(h.value) ASC;\n--\n-- Result: 2022 = 935mm (36.8 in), 54 stations. Suspicious because of\n-- station count drop \u2014 could be composition artifact.\n\n-- ============================================================================\n-- GOLD VERSION: Stable reference panel, verified against composition artifact\n-- ============================================================================\n-- Step 1: Identify Oahu stations from API metadata (island='OA')\n-- Step 2: Build reference panel = stations with >=20 of 26 years reporting\n--         (2000-2025) that ALSO reported in 2022\n-- Step 3: Compute annual rainfall using ONLY these 41 stations across all years\n\nCREATE TEMP TABLE oahu_skns (skn text);\nCOPY oahu_skns FROM '/tmp/oahu_skns.txt';\n\nWITH panel_with_2022 AS (\n  -- 41 stations: long-running AND reported in 2022\n  SELECT DISTINCT p.station_id\n  FROM (\n    SELECT h.station_id\n    FROM historical_station_values h\n    JOIN oahu_skns o ON o.skn = h.station_id\n    WHERE h.datatype = 'rainfall'\n      AND EXTRACT(YEAR FROM h.date) BETWEEN 2000 AND 2025\n    GROUP BY h.station_id\n    HAVING COUNT(DISTINCT EXTRACT(YEAR FROM h.date)) >= 20\n  ) p\n  JOIN historical_station_values h ON h.station_id = p.station_id\n  WHERE h.datatype = 'rainfall' AND EXTRACT(YEAR FROM h.date) = 2022\n),\nyearly AS (\n  SELECT\n    EXTRACT(YEAR FROM h.date)::int AS year,\n    COUNT(DISTINCT h.station_id) AS stations_reporting,\n    ROUND(AVG(h.value)::numeric, 1) AS avg_monthly_mm,\n    ROUND((AVG(h.value) * 12)::numeric, 0) AS est_annual_mm,\n    ROUND((AVG(h.value) * 12 / 25.4)::numeric, 1) AS est_annual_in\n  FROM historical_station_values h\n  JOIN panel_with_2022 p ON p.station_id = h.station_id\n  WHERE h.datatype = 'rainfall'\n    AND EXTRACT(YEAR FROM h.date) BETWEEN 2000 AND 2025\n  GROUP BY EXTRACT(YEAR FROM h.date)\n)\nSELECT year, stations_reporting, avg_monthly_mm, est_annual_mm, est_annual_in,\n  RANK() OVER (ORDER BY est_annual_mm ASC) AS dry_rank\nFROM yearly\nORDER BY est_annual_mm ASC;\n\n-- Supporting: network composition of the 41-station panel\n-- HydroNet-UaNet: 20, RAWS: 11, USGS: 8, NWS: 2\n-- Zero COOP stations (all 42 COOP panel stations dropped out of 2022)\n\n-- Supporting: long-term mean of the panel\n-- 1,458 mm (57.4 in) across 2000-2025\n-- 2022 = 985 mm = 67.5% of mean\n-- 2000 (#2 driest) = 1,127 mm = 77.3% of mean\n-- Gap between #1 and #2: 10 percentage points\n",
+  "verified": true,
+  "difficulty": "hard",
+  "domain_tags": [
+    "drought",
+    "oahu",
+    "annual-rainfall",
+    "methodology",
+    "network-composition",
+    "reference-panel",
+    "external-validation"
+  ],
+  "required_tools": [
+    "sql_query",
+    "web_search"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "First verified entry. Teaching example of naive-vs-corrected methodology. COOP network attrition documentation appears novel.",
+  "intent": "Identify Oahu's driest calendar year, verify the finding is not a station-network composition artifact, and cross-check against the US Drought Monitor",
+  "scientific_context": "Station-based annual rainfall comparisons across decades are vulnerable to network-composition bias. Hawaii's COOP volunteer observer network collapsed between 2019-2022, reducing Oahu reporting stations from ~125 to 54. Cross-year comparisons require a stable reference panel of continuously-reporting stations.",
+  "reasoning_sketch": "Naive station-average is biased by network turnover. Build a stable reference panel filtered for continuous coverage AND adequate within-year reporting. Re-rank years on the panel. Cross-check magnitude against USDM drought intensity for the candidate year.",
+  "expected_answer_shape": "Ranked table of years by annual rainfall on a stable panel, with 2022's rank, deficit vs mean, and gap to next-driest year. External corroboration from USDM.",
+  "pitfalls": [
+    "station_network_composition_changes_over_time",
+    "coop_network_attrition_post_2019",
+    "raw_station_average_can_conflate_drought_signal_with_sampling_change",
+    "stable_reference_panel_required_for_cross_year_comparisons",
+    "historical_station_values use SKN IDs not mesonet IDs \u2014 must join via API metadata to identify Oahu stations"
+  ],
+  "follow_up_questions": [
+    "Does the same panel-based methodology change the ranking on other islands?",
+    "Can a kriged/gridded product reproduce the 2022 signal independent of station selection?",
+    "What was the rainfall deficit by season (wet vs. dry season) within 2022?"
+  ],
+  "assumptions": [
+    "Reference panel = Oahu stations reporting in >=20 of 26 years (2000-2025) AND reporting in 2022",
+    "Annual total estimated as avg monthly rainfall * 12",
+    "Long-term mean = panel-average across 2000-2025",
+    "Oahu station identification via HCDP API metadata (island='OA')",
+    "Panel skews toward automated networks (HydroNet, RAWS) but spans full windward-leeward and elevation gradient"
+  ]
+}
