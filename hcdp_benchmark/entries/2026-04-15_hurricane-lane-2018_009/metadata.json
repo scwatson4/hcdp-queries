@@ -1,0 +1,98 @@
+{
+  "question_id": "d820bf7a-c5ac-4f4e-b31c-261da6c14d24",
+  "question_nl": "Can you find Hurricane Lane in the data? It hit Hawaii in August 2018. What's the highest storm total you can find?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T02:00:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "91d7ff2c3302fa1e34f3c84d80f69a4364a3aabd2fff821ee27ae75e81680c8c",
+  "gold_result_preview": [
+    {
+      "skn": "140.5",
+      "aug_2018_mm": "2166",
+      "aug_2018_inches": "85.3"
+    },
+    {
+      "skn": "277",
+      "aug_2018_mm": "2142",
+      "aug_2018_inches": "84.3"
+    },
+    {
+      "skn": "88.2",
+      "aug_2018_mm": "2060",
+      "aug_2018_inches": "81.1"
+    },
+    {
+      "skn": "88.1",
+      "aug_2018_mm": "2055",
+      "aug_2018_inches": "80.9"
+    },
+    {
+      "skn": "55.4",
+      "aug_2018_mm": "2025",
+      "aug_2018_inches": "79.7"
+    },
+    {
+      "skn": "138.2",
+      "aug_2018_mm": "2013",
+      "aug_2018_inches": "79.3"
+    },
+    {
+      "skn": "89.13",
+      "aug_2018_mm": "1966",
+      "aug_2018_inches": "77.4"
+    },
+    {
+      "skn": "1047",
+      "aug_2018_mm": "1943",
+      "aug_2018_inches": "76.5"
+    },
+    {
+      "skn": "91.8",
+      "aug_2018_mm": "1927",
+      "aug_2018_inches": "75.9"
+    },
+    {
+      "skn": "138.3",
+      "aug_2018_mm": "1927",
+      "aug_2018_inches": "75.8"
+    }
+  ],
+  "draft_sql": "-- Hurricane Lane hit Hawaii August 22-26, 2018.\n-- Mesonet data starts 2022, so we must use historical_station_values (monthly resolution).\n\n-- Top stations by August 2018 monthly rainfall\nSELECT\n  h.station_id AS skn,\n  ROUND(h.value::numeric, 0) AS aug_2018_mm,\n  ROUND((h.value / 25.4)::numeric, 1) AS aug_2018_inches\nFROM historical_station_values h\nWHERE h.date = '2018-08-01' AND h.datatype = 'rainfall'\nORDER BY h.value DESC\nLIMIT 20;\n\n-- Supporting query: Lane excess above normal August\n-- SELECT\n--   h.station_id AS skn,\n--   ROUND(AVG(CASE WHEN EXTRACT(YEAR FROM date) != 2018 THEN h.value END)::numeric, 0) AS avg_aug_mm_excl_2018,\n--   ROUND(MAX(CASE WHEN EXTRACT(YEAR FROM date) = 2018 THEN h.value END)::numeric, 0) AS aug_2018_mm,\n--   ROUND((MAX(CASE WHEN EXTRACT(YEAR FROM date) = 2018 THEN h.value END)\n--     - AVG(CASE WHEN EXTRACT(YEAR FROM date) != 2018 THEN h.value END))::numeric, 0) AS lane_excess_mm\n-- FROM historical_station_values h\n-- WHERE h.datatype = 'rainfall' AND EXTRACT(MONTH FROM date) = 8\n-- GROUP BY h.station_id\n-- HAVING MAX(CASE WHEN EXTRACT(YEAR FROM date) = 2018 THEN h.value END) > 1500\n-- ORDER BY lane_excess_mm DESC;\n-- Result: Station 277 had highest excess of 1,700mm; station 140.5 had 1,691mm\n\n-- Supporting query: August comparison across years (to confirm 2018 is an outlier)\n-- SELECT EXTRACT(YEAR FROM date), MAX(value), AVG(value), COUNT(*)\n-- FROM historical_station_values\n-- WHERE datatype='rainfall' AND EXTRACT(MONTH FROM date)=8 AND date >= '2015-01-01'\n-- GROUP BY EXTRACT(YEAR FROM date) ORDER BY year;\n-- Result: Aug 2018 max=2166mm, avg=478mm; next highest Aug max=1403mm (2016)\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "hurricane",
+    "extreme-events",
+    "historical",
+    "temporal-resolution",
+    "rainfall"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "Monthly proxy overestimates actual storm total by ~15-30%. Published daily-resolution totals are 50-58 inches.",
+  "intent": "Find evidence of a specific historical hurricane in the available data and estimate its peak rainfall total, despite temporal resolution limitations",
+  "scientific_context": "Hurricane Lane (Aug 22-26, 2018) was a Cat 5 hurricane that stalled near Hawaii, producing 50-58 inches of rain at Big Island windward stations. Mesonet data starts 2022; only monthly historical data covers 2018.",
+  "reasoning_sketch": "1. Recognize mesonet (2022+) can't see 2018 \u2014 pivot to historical_station_values 2. Query Aug 2018 monthly rainfall 3. Compare to typical Augusts to confirm outlier 4. Subtract baseline August to estimate Lane-specific rainfall 5. Caveat the monthly vs daily resolution gap",
+  "expected_answer_shape": "Ranked table of top stations by August 2018 rainfall, plus narrative explaining the resolution limitation and comparing to published storm totals",
+  "pitfalls": [
+    "Mesonet data starts 2022 \u2014 agent must recognize this and use historical data instead",
+    "Monthly totals are not storm totals \u2014 must acknowledge the resolution limitation",
+    "Baseline subtraction overestimates if non-Lane August rain was above average",
+    "Historical station IDs (SKN numbers) are different from mesonet station_ids"
+  ],
+  "follow_up_questions": [
+    "Which SKN stations correspond to Mountain View?",
+    "How does Lane compare to other Hawaii hurricanes in the data?",
+    "Could the HCDP daily raster products provide better resolution?"
+  ],
+  "assumptions": [
+    "Average August rainfall (excluding 2018) is a reasonable baseline for non-Lane rain",
+    "The top stations are Big Island windward based on their SKN numbers and rainfall magnitude"
+  ]
+}
