@@ -1,0 +1,108 @@
+{
+  "question_id": "7ff50463-945f-431b-bdb7-5a8adc1c619d",
+  "question_nl": "List every active mesonet station with its island, elevation, and the date of its most recent reading. Flag any station that hasn't reported in the last 7 days.",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T01:45:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "dd87a6cec6e16b8448f3868282c1798c2dfa59008c84414e7218c01c171f8102",
+  "gold_result_preview": [
+    {
+      "station_id": "0245",
+      "name": "K\u012bpuka Nui",
+      "island": "Hawaii",
+      "elev_m": "1176",
+      "last_reading": "2026-01-20 16:20:00+00",
+      "status": "STALE"
+    },
+    {
+      "station_id": "0532",
+      "name": "P\u0101lolo Mauka",
+      "island": "Oahu",
+      "elev_m": "714",
+      "last_reading": "2026-02-04 21:30:00+00",
+      "status": "STALE"
+    },
+    {
+      "station_id": "0203",
+      "name": "\u02bbŌla\u02bba",
+      "island": "Hawaii",
+      "elev_m": "1043",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0215",
+      "name": "Hakalau",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0216",
+      "name": "Punahoa",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0223",
+      "name": "N\u0101\u02bb\u014dhule\u02bbelua",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0224",
+      "name": "Pu\u02bbuhe\u02bbewai",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0225",
+      "name": "Alaekila",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0248",
+      "name": "Kauhuku Mauka",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    },
+    {
+      "station_id": "0259",
+      "name": "Pu\u02bbuoli",
+      "island": "Hawaii",
+      "elev_m": "",
+      "last_reading": "",
+      "status": "NEVER"
+    }
+  ],
+  "draft_sql": "SELECT\n  s.station_id,\n  s.name,\n  s.island,\n  ROUND(s.elevation_m::numeric, 0) AS elev_m,\n  MAX(m.timestamp) AS last_reading,\n  CASE WHEN MAX(m.timestamp) < now() - interval '7 days' THEN 'STALE'\n       WHEN MAX(m.timestamp) IS NULL THEN 'NEVER'\n       ELSE 'OK' END AS status\nFROM mesonet_stations s\nLEFT JOIN mesonet_measurements m ON m.station_id = s.station_id\nGROUP BY s.station_id, s.name, s.island, s.elevation_m\nORDER BY status DESC, s.island, s.station_id;",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": ["metadata", "station-health", "freshness", "network-monitoring"],
+  "required_tools": ["sql_query"],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Assess mesonet network health by identifying stations that have stopped reporting",
+  "scientific_context": "Mesonet stations can go offline due to hardware failure, power loss, or communication issues. Detecting stale stations quickly is essential for data quality monitoring.",
+  "reasoning_sketch": "LEFT JOIN stations to measurements, GROUP BY station, check MAX(timestamp) against 7-day threshold",
+  "expected_answer_shape": "Table of all 103 stations with last_reading timestamp and OK/STALE/NEVER status",
+  "pitfalls": ["Must use LEFT JOIN to include stations with zero measurements", "NULL timestamps need separate handling (NEVER vs STALE)"],
+  "follow_up_questions": ["What caused Kipuka Nui and Palolo Mauka to go offline?", "Are the NEVER stations planned installations?"],
+  "assumptions": ["7 days is a reasonable staleness threshold for 5-minute reporting stations"]
+}

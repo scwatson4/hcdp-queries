@@ -1,0 +1,1 @@
+103 stations total. 67 actively reporting (within last 45 min). 2 stale (Kipuka Nui silent 85 days, Palolo Mauka silent 70 days). ~24 never reported (planned/not-yet-online sites with no measurements in DB). Remaining have NULL last_reading flagged NEVER.

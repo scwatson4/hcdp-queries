@@ -1,0 +1,104 @@
+station_id,name,island,elev_m,last_reading,status
+0245,Kīpuka Nui,Hawaii,1176,2026-01-20 16:20:00+00,STALE
+0532,Pālolo Mauka,Oahu,714,2026-02-04 21:30:00+00,STALE
+0203,ʻŌlaʻa,Hawaii,1043,,NEVER
+0215,Hakalau,Hawaii,,,NEVER
+0216,Punahoa,Hawaii,,,NEVER
+0223,Nāʻōhuleʻelua,Hawaii,,,NEVER
+0224,Puʻuheʻewai,Hawaii,,,NEVER
+0225,Alaekila,Hawaii,,,NEVER
+0248,Kauhuku Mauka,Hawaii,,,NEVER
+0259,Puʻuoli,Hawaii,,,NEVER
+0260,Puanui,Hawaii,,,NEVER
+0604,Upper Limahuli,Kauai,994,,NEVER
+0631,Polihale,Kauai,7,,NEVER
+0632,Kitano Reservoir,Kauai,546,,NEVER
+0642,Powerline Trail,Kauai,651,,NEVER
+0162,Treeline,Maui,2235,,NEVER
+0164,Big Bog,Maui,1652,,NEVER
+0413,ʻUalapuʻe,Molokai,,,NEVER
+0414,Pēpēʻōpae ,Molokai,,,NEVER
+0522,Palikea,Oahu,897,,NEVER
+0542,Poamoho Connex Landing Zone,Oahu,542,,NEVER
+0543,Poamoho Summit,Oahu,788,,NEVER
+0544,Waiawa,Oahu,645,,NEVER
+0232,Kahilipalinui,Unknown,,,NEVER
+0233,Ka Lae,Unknown,,,NEVER
+0234,Kahuku,Unknown,,,NEVER
+0247,Kipahoehoe,Unknown,,,NEVER
+0201,Nāhuku,Hawaii,1202,2026-04-15 01:45:00+00,OK
+0202,Keaʻau,Hawaii,182,2026-04-15 01:45:00+00,OK
+0204,Pāhoa,Hawaii,175,2026-04-15 01:45:00+00,OK
+0211,Kanakaleonui,Hawaii,2352,2026-04-15 01:45:00+00,OK
+0212,Kulaʻimano,Hawaii,260,2026-04-15 01:45:00+00,OK
+0213,Piʻihonua,Hawaii,606,2026-04-15 01:45:00+00,OK
+0214,Waipunalei,Hawaii,1654,2026-04-15 01:40:00+00,OK
+0221,Kaluamakani,Hawaii,1880,2026-04-15 01:45:00+00,OK
+0222,Aipalaoa,Hawaii,2039,2026-04-15 01:45:00+00,OK
+0241,Keahuolū,Hawaii,537,2026-04-15 01:45:00+00,OK
+0242,Kaiāulu Puʻuwaʻawaʻa,Hawaii,1161,2026-04-15 01:45:00+00,OK
+0244,Kealakekua,Hawaii,1840,2026-04-15 01:45:00+00,OK
+0246,Kona Research Station,Hawaii,446,2026-04-15 01:40:00+00,OK
+0251,Kehena Ditch Cabin,Hawaii,1158,2026-04-14 21:00:00+00,OK
+0252,Lālāmilo,Hawaii,802,2026-04-15 01:45:00+00,OK
+0253,Puʻuloa,Hawaii,1026,2026-04-15 01:45:00+00,OK
+0254,Kawaihae,Hawaii,113,2026-04-15 01:45:00+00,OK
+0255,Waipoʻo,Hawaii,1381,2026-04-15 01:45:00+00,OK
+0256,Mealani Research Station,Hawaii,879,2026-04-15 01:45:00+00,OK
+0257,ʻIo,Hawaii,538,2026-04-15 01:45:00+00,OK
+0258,ʻIole,Hawaii,52,2026-04-15 01:45:00+00,OK
+0281,Institute of Pacific Islands Forestry,Hawaii,112,2026-04-15 01:45:00+00,OK
+0282,Spencer,Hawaii,469,2026-04-15 01:45:00+00,OK
+0283,Laupāhoehoe,Hawaii,1152,2026-04-15 01:45:00+00,OK
+0286,Pālamanui,Hawaii,264,2026-04-15 01:45:00+00,OK
+0287,Māmalahoa,Hawaii,603,2026-04-15 01:45:00+00,OK
+0288,Puʻuwaʻawaʻa,Hawaii,1654,2026-04-15 01:20:00+00,OK
+0601,Waipā,Kauai,5,2026-04-15 01:45:00+00,OK
+0602,Common Ground,Kauai,112,2026-04-15 01:45:00+00,OK
+0603,Lower Limahuli,Kauai,31,2026-04-15 01:45:00+00,OK
+0611,Keālia,Kauai,148,2026-04-15 01:45:00+00,OK
+0621,Lāwaʻi National Tropical Botanical Garden,Kauai,106,2026-04-15 01:45:00+00,OK
+0641,Hanamāʻulu,Kauai,225,2026-04-15 01:45:00+00,OK
+0115,Piʻiholo,Maui,637,2026-04-15 01:45:00+00,OK
+0116,Kēōkea,Maui,871,2026-04-15 01:45:00+00,OK
+0118,Pūlehu,Maui,427,2026-04-15 01:45:00+00,OK
+0119,Kula Agricultural Experiment Station,Maui,964,2026-04-15 01:45:00+00,OK
+0121,Līpoa,Maui,88,2026-04-15 01:45:00+00,OK
+0122,Kaʻehu,Maui,6,2026-04-15 01:45:00+00,OK
+0131,Lahaina Water Treatment Plant,Maui,244,2026-04-15 01:45:00+00,OK
+0132,Olowalu,Maui,54,2026-04-15 01:45:00+00,OK
+0133,Honolua,Maui,170,2026-04-15 01:45:00+00,OK
+0134,Hanaʻula,Maui,1215,2026-04-15 01:45:00+00,OK
+0141,Auwahi,Maui,1177,2026-04-15 01:15:00+00,OK
+0143,Nākula,Maui,1632,2026-04-14 22:45:00+00,OK
+0144,Kahikinui,Maui,713,2026-04-14 13:15:00+00,OK
+0145,Upper Kahikinui,Maui,1034,2026-04-14 14:15:00+00,OK
+0151,Haleakalā Park Headquarters,Maui,2114,2026-04-15 01:45:00+00,OK
+0152,Nēnē Nest,Maui,2593,2026-04-15 01:45:00+00,OK
+0153,Haleakalā Summit,Maui,2984,2026-04-15 01:45:00+00,OK
+0154,Waikamoi,Maui,1935,2026-04-15 01:45:00+00,OK
+0155,East Maui Irrigation Company Base Yard,Maui,210,2026-04-15 01:40:00+00,OK
+0156,West Kuiaha Road,Maui,242,2026-04-15 01:45:00+00,OK
+0160,Kuiki,Maui,2299,2026-04-15 00:10:00+00,OK
+0161,Pōhaku Pālaha,Maui,2460,2026-04-15 01:15:00+00,OK
+0165,Hāmoa,Maui,106,2026-04-15 01:45:00+00,OK
+0166,Kīpahulu Visitors Center,Maui,29,2026-04-15 01:30:00+00,OK
+0412,Honoulimaloʻo,Molokai,402,2026-04-15 01:45:00+00,OK
+0421,Kualapuʻu,Molokai,259,2026-04-15 01:45:00+00,OK
+0422,Nāʻiwa,Molokai,68,2026-04-15 01:45:00+00,OK
+0431,Anapuka,Molokai,68,2026-04-15 01:45:00+00,OK
+0501,Lyon Arboretum,Oahu,151,2026-04-15 01:15:00+00,OK
+0502,Nuʻuanu Reservoir Number 1,Oahu,117,2026-04-15 01:45:00+00,OK
+0503,Upper Waolani,Oahu,202,2026-04-15 01:40:00+00,OK
+0504,Waolani,Oahu,98,2026-04-15 01:40:00+00,OK
+0505,Nāpuʻumaiʻa,Oahu,508,2026-04-15 01:45:00+00,OK
+0506,Kalāwahine,Oahu,506,2026-04-15 01:45:00+00,OK
+0521,Kaʻala,Oahu,1205,2026-04-15 01:45:00+00,OK
+0531,Kaluanui Ridge,Oahu,239,2026-04-15 01:45:00+00,OK
+0541,Kaʻaʻawa Makai,Oahu,3,2026-04-15 01:45:00+00,OK
+0551,Kalaheʻe Ridge,Oahu,197,2026-04-15 01:40:00+00,OK
+0231,Kaiholena,Unknown,631,2026-04-15 01:45:00+00,OK
+0235,Manukā,Unknown,108,2026-04-15 01:50:00+00,OK
+0243,Kona Hema,Unknown,1283,2026-04-15 01:45:00+00,OK
+0411,Keōpukaloa,Unknown,187,2026-04-15 01:45:00+00,OK
+0520,Kaʻala Repeater,,,2026-04-15 01:25:00+00,OK
