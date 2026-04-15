@@ -1,0 +1,66 @@
+{
+  "question_id": "7f433104-4350-4afb-92d7-e8e65186af63",
+  "question_nl": "Compare the top 5 wettest stations with the top 5 driest stations across all the islands.",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T02:45:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "2259930dedca64f76f0894a19c5d8590ba34965b94d22be2b480a350f4dbd4eb",
+  "gold_result_preview": [
+    {
+      "rank": "WET #1",
+      "station_id": "0213",
+      "name": "Piihonua",
+      "island": "Hawaii",
+      "elev_m": 606,
+      "est_annual_mm": 4414,
+      "pct_rainy_days": 68.3
+    },
+    {
+      "rank": "DRY #1",
+      "station_id": "0254",
+      "name": "Kawaihae",
+      "island": "Hawaii",
+      "elev_m": 113,
+      "est_annual_mm": 353,
+      "pct_rainy_days": 11.7
+    }
+  ],
+  "draft_sql": null,
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "rainfall",
+    "climatology",
+    "station-ranking",
+    "orographic-effects",
+    "windward-leeward"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 600,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "Station 0115 excluded due to 7999mm sensor error values inflating apparent rainfall.",
+  "intent": "Contrast the extremes of Hawaiian rainfall distribution and explain the geographic/orographic patterns",
+  "scientific_context": "Hawaii has extreme rainfall gradients driven by orographic effects -- trade winds produce heavy windward precipitation and leeward rain shadows. The wet/dry ratio can exceed 10x within a single island.",
+  "reasoning_sketch": "1. Compute avg daily rainfall per station with >1yr data 2. Rank wet and dry 3. Recognize station 0115 is inflated by sensor errors and exclude 4. Compare frequency (pct_rainy_days) vs intensity (avg_rainy_day_mm) to understand what drives the difference",
+  "expected_answer_shape": "Table with rank, station_id, name, island, elev_m, days_with_data, avg_daily_mm, est_annual_mm, est_annual_in, max_single_day_mm, pct_rainy_days -- 5 wet + 5 dry rows",
+  "pitfalls": [
+    "Station 0115 sensor errors make it appear as wettest by far -- must recognize and exclude",
+    "Frequency drives wet/dry differences more than per-event intensity",
+    "Even the driest stations can get extreme single-day rainfall"
+  ],
+  "follow_up_questions": [
+    "How does elevation correlate with rainfall across all stations?",
+    "Are there stations where the wet/dry pattern reverses seasonally?",
+    "How many other stations have similar 7999mm error patterns?"
+  ],
+  "assumptions": [
+    "Daily summary MV has sufficient temporal coverage for meaningful averages",
+    "0.2mm threshold defines a rainy day",
+    "Stations with <365 days of data are excluded"
+  ]
+}
