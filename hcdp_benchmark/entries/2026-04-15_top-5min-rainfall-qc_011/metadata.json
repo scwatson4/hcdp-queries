@@ -1,0 +1,38 @@
+{
+  "question_id": "6ce83c49-f4dc-4f58-b691-0008c4fa8cc4",
+  "question_nl": "What are the top 10 highest 5-minute rainfall readings ever recorded in the database? Are any of them suspicious?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T02:30:00Z",
+  "domain_tags": [
+    "data-quality",
+    "rainfall",
+    "QC",
+    "extreme-values",
+    "sensor-error",
+    "tipping-bucket"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "intent": "Identify the most extreme rainfall readings and assess whether they represent real weather or sensor artifacts",
+  "scientific_context": "Tipping bucket rain gauges can produce spurious readings from mechanical faults (stuck bucket, clogged funnel) or electrical noise. The 7999 sentinel code indicates sensor overflow/fault. Physical limit for 5-min rainfall is roughly 12-15mm.",
+  "reasoning_sketch": "1. Query top values 2. Recognize 7999 as sentinel code 3. Filter and re-query 4. Check context around top readings for isolated spikes 5. Apply physical plausibility thresholds",
+  "pitfalls": [
+    "All top 10 are sentinel codes — must filter and re-query",
+    "Single-reading spikes surrounded by zeros indicate sensor artifacts not weather",
+    "Must know physical limits of 5-min rainfall to assess plausibility"
+  ],
+  "gold_result_hash": "94b2df57d0bbf41f7f8d263e74c2f5ce7c6dbe8f1d29a5eadf15774298a6672b",
+  "gold_result_preview": [
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-06 04:35:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-06 04:25:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-06 04:20:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-06 04:30:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:10:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:50:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:40:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:30:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:55:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0},
+    {"station_id": "0115", "name": "Piʻiholo", "island": "Maui", "timestamp": "2023-03-05 23:05:00+00", "rainfall_mm_5min": 7999.00, "rainfall_inches_5min": 314.92, "rate_mm_per_hr": 95988, "flag": 0}
+  ]
+}
