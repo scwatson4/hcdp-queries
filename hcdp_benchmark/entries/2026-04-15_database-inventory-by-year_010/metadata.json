@@ -1,0 +1,118 @@
+{
+  "question_id": "324a6b9b-f952-4672-acab-216d89e3ba2e",
+  "question_nl": "For each table in the database, what is the earliest and latest timestamp, and how many distinct stations/grid cells report data in each year from 2010 to present? Break it down by data product.",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T02:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "8a636dc225ac89c9c572411a1ae759d944a11c4e82ea858bf37541d58bd75783",
+  "gold_result_preview": [
+    {
+      "text": "historical_monthly",
+      "extract": "1990",
+      "count": "357",
+      "min": "1990-01-01",
+      "max": "1990-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1991",
+      "count": "359",
+      "min": "1991-01-01",
+      "max": "1991-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1992",
+      "count": "390",
+      "min": "1992-01-01",
+      "max": "1992-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1993",
+      "count": "411",
+      "min": "1993-01-01",
+      "max": "1993-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1994",
+      "count": "437",
+      "min": "1994-01-01",
+      "max": "1994-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1995",
+      "count": "437",
+      "min": "1995-01-01",
+      "max": "1995-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1996",
+      "count": "440",
+      "min": "1996-01-01",
+      "max": "1996-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1997",
+      "count": "433",
+      "min": "1997-01-01",
+      "max": "1997-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1998",
+      "count": "458",
+      "min": "1998-01-01",
+      "max": "1998-12-01"
+    },
+    {
+      "text": "historical_monthly",
+      "extract": "1999",
+      "count": "477",
+      "min": "1999-01-01",
+      "max": "1999-12-01"
+    }
+  ],
+  "draft_sql": "-- Database inventory: rows, distinct stations, and date range by product and year\nWITH mesonet AS (\n  SELECT 'mesonet_5min'::text AS product, EXTRACT(YEAR FROM timestamp)::int AS year,\n    COUNT(*) AS rows, COUNT(DISTINCT station_id) AS distinct_stations,\n    MIN(timestamp)::text AS earliest, MAX(timestamp)::text AS latest\n  FROM mesonet_measurements GROUP BY EXTRACT(YEAR FROM timestamp)\n),\nhistorical AS (\n  SELECT 'historical_monthly'::text, EXTRACT(YEAR FROM date)::int,\n    COUNT(*), COUNT(DISTINCT station_id),\n    MIN(date)::text, MAX(date)::text\n  FROM historical_station_values GROUP BY EXTRACT(YEAR FROM date)\n),\ndaily_mv AS (\n  SELECT 'mv_daily_summary'::text, EXTRACT(YEAR FROM date_hst)::int,\n    COUNT(*), COUNT(DISTINCT station_id),\n    MIN(date_hst)::text, MAX(date_hst)::text\n  FROM mv_daily_station_summary GROUP BY EXTRACT(YEAR FROM date_hst)\n),\nmonthly_mv AS (\n  SELECT 'mv_monthly_summary'::text, EXTRACT(YEAR FROM month)::int,\n    COUNT(*), COUNT(DISTINCT station_id),\n    MIN(month)::text, MAX(month)::text\n  FROM mv_monthly_station_summary GROUP BY EXTRACT(YEAR FROM month)\n)\nSELECT * FROM historical\nUNION ALL SELECT * FROM mesonet\nUNION ALL SELECT * FROM daily_mv\nUNION ALL SELECT * FROM monthly_mv\nORDER BY 1, 2;\n\n-- Note: gridded/raster products are available via the HCDP /raster API endpoint\n-- but were not ingested into this database (they are GeoTIFF files, not tabular data).\n-- Daily-resolution historical station values also exist in the API (period=day)\n-- but only monthly (period=month) was ingested.\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "metadata",
+    "inventory",
+    "coverage",
+    "temporal-analysis",
+    "network-growth"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 600,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "Mesonet CTE takes ~10 min to scan 961M rows. Consider timeout_s=600.",
+  "intent": "Produce a complete inventory of all data products in the database with temporal coverage, station counts, and row counts by year",
+  "scientific_context": "Understanding data inventory is foundational \u2014 coverage gaps, station attrition, and temporal resolution differences affect what questions the database can answer.",
+  "reasoning_sketch": "1. List all tables and materialized views 2. For each, GROUP BY year to get row counts, distinct stations, min/max timestamps 3. UNION ALL into a single result 4. Note what data products exist in the API but are NOT in the database",
+  "expected_answer_shape": "Table with columns: product, year, rows, distinct_stations, earliest, latest \u2014 one row per product per year",
+  "pitfalls": [
+    "Must check materialized views in addition to tables",
+    "Must note that gridded/raster data is not in the database (answer the 'grid cells' part of the question)",
+    "The mesonet GROUP BY on 961M rows is slow \u2014 may timeout with default 120s",
+    "Historical station_ids (SKN) are different from mesonet station_ids \u2014 distinct_stations counts are not comparable across products"
+  ],
+  "follow_up_questions": [
+    "Why did the historical station count drop from 512 to 270?",
+    "Do any mesonet stations overlap geographically with historical stations?",
+    "Should daily historical values also be ingested?"
+  ],
+  "assumptions": [
+    "All data products are in public schema",
+    "Materialized views count as 'data products' for this inventory"
+  ]
+}

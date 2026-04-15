@@ -1,0 +1,1 @@
+For each table in the database, what is the earliest and latest timestamp, and how many distinct stations/grid cells report data in each year from 2010 to present? Break it down by data product (mesonet 5-min, daily station, gridded, etc.).
