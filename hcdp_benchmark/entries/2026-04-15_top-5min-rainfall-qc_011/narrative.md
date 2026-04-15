@@ -29,13 +29,17 @@ The fact that these sentinel codes carry flag=0 (no QC flag set) indicates that 
 
 ### Station 0602: A Systematic Problem
 
-Station 0602 (Common Ground, Kauai) appears repeatedly in the top rainfall readings after sentinel codes are filtered out. The readings share a consistent pattern:
+Station 0602 (Common Ground, Kauai, 112m, near Hanalei) appears 5 times in the top 12 readings. Detailed context analysis of each spike:
 
-1. A single 5-minute reading with an extreme value (30-44 mm)
-2. Zero or near-zero readings in the intervals immediately before and after
-3. No corroboration from nearby stations
+**Spike 1: 2024-03-02, 43.64mm — FAKE.** `0→0→0→0→0→0→43.64→0→0→0→0→0→0`. A single reading surrounded by 30+ minutes of zeros on both sides. Classic stuck-bucket dump.
 
-This pattern is the hallmark of a tipping bucket malfunction — specifically, a stuck bucket that periodically releases. Real extreme rainfall events produce elevated readings across multiple consecutive intervals and are typically observed at nearby stations as well.
+**Spike 2: 2023-02-05, 32.88+42.94mm burst — FAKE (during real rain).** `0.5→0.5→0.8→0.8→1.0→1.3→32.88→42.94→11.87→0.25→0→0`. There was real rain building (gradual ramp from 0.5 to 1.3mm/5min), then the gauge dumped 87.7mm over two readings. The funnel or bucket got obstructed during real precipitation, water pooled, then released all at once.
+
+**Spike 3: 2024-11-05, 31.96mm — LIKELY FAKE.** `0.25→0→0→0→0→9.66→31.96→0→0→0→0→0→0`. Small precursor (9.66mm), then a 32mm spike, then nothing. Another dump pattern.
+
+**Spike 4: 2025-03-12, 20.19mm — AMBIGUOUS.** `0.25→0→1.0→1.8→2.0→6.7→20.19→0→0→0`. Clear ramp-up that looks more like a genuine intense convective cell peaking and ending. 20mm/5min (240 mm/hr) is extreme but not impossible. However, the instant drop to zero is unusual — real storms typically taper off.
+
+The consistent pattern across years suggests a chronic hardware issue — likely a partially clogged funnel or sticky bucket mechanism that periodically accumulates and dumps.
 
 ### The Big Picture
 
