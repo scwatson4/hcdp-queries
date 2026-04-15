@@ -1,0 +1,122 @@
+{
+  "question_id": "1628bad8-9828-4657-bb55-cab8e6e4e1a3",
+  "question_nl": "Can we confirm with an HCDP API call that station 0115 data is accurate? And contextualize why it is bad data?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "f23662b359e28adfc00e9e9d08ee1bd722f151ac428ea6693d6ea4d9ed3d2a1a",
+  "gold_result_preview": [
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:00:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:05:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:10:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:15:00+00",
+      "value": "0.257",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:20:00+00",
+      "value": "0.257",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:25:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:30:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:35:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:40:00+00",
+      "value": "0",
+      "flag": "0"
+    },
+    {
+      "station_id": "0115",
+      "name": "Pi\u02bbiholo",
+      "var_id": "RF_1_Tot300s",
+      "timestamp": "2023-03-04 00:45:00+00",
+      "value": "0",
+      "flag": "0"
+    }
+  ],
+  "draft_sql": "-- Raw 5-minute rainfall readings for station 0115 (Piiholo, Maui) around the bad dates\n-- RF_1_Tot300s = rainfall accumulated over 300-second (5-minute) intervals, in mm\nSELECT\n  m.station_id,\n  s.name,\n  m.var_id,\n  m.timestamp,\n  m.value,\n  m.flag\nFROM mesonet_measurements m\nJOIN mesonet_stations s ON s.station_id = m.station_id\nWHERE m.station_id = '0115'\n  AND m.var_id = 'RF_1_Tot300s'\n  AND m.timestamp >= '2023-03-04T00:00:00+00'\n  AND m.timestamp < '2023-03-08T00:00:00+00'\n  AND m.value IS NOT NULL\nORDER BY m.timestamp;\n\n-- Also confirmed via direct HCDP API call:\n-- curl \"https://api.hcdp.ikewai.org/mesonet/db/measurements?station_ids=0115&var_ids=RF_1_Tot300s\n--   &start_date=2023-03-05T00:00:00-10:00&end_date=2023-03-06T23:59:59-10:00&row_mode=json&limit=100000\"\n-- Result: 401 readings total; 250 readings of value=7999, 151 readings of value=0\n-- All 7999 readings have flag=0 (not flagged as bad by HCDP)\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "data-quality",
+    "sensor-error",
+    "QC",
+    "API-validation"
+  ],
+  "required_tools": [
+    "sql_query",
+    "api_call"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Validate suspected bad data by cross-referencing local DB with source API, and diagnose the root cause of the sensor error",
+  "scientific_context": "Automated weather stations use tipping-bucket rain gauges that report cumulative 5-min rainfall. Sensor faults often manifest as constant max-register values (sentinel codes).",
+  "reasoning_sketch": "1. Query raw 5-min readings around bad dates 2. Call HCDP API for same data to confirm match 3. Compare to normal day readings 4. Identify the error pattern (constant 7999 = sensor fault code)",
+  "expected_answer_shape": "Raw time series showing transition from normal to error state, plus API confirmation",
+  "pitfalls": [
+    "Bad data with flag=0 passes through standard QC undetected",
+    "The value 7999 looks like a large but plausible number if you don't know it's a sentinel"
+  ],
+  "follow_up_questions": [
+    "How many other stations/variables have 7999 errors?",
+    "Has this been reported to HCDP?"
+  ],
+  "assumptions": []
+}

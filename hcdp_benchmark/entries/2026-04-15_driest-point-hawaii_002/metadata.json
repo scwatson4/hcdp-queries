@@ -1,0 +1,141 @@
+{
+  "question_id": "84a437fa-7e54-4f9f-bc42-978b94e721b8",
+  "question_nl": "What is considered the driest point across all the Hawaiian Islands?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "7203ef7145bd19a516fb4653d84e58f5189631d62a5efd3f7bffc151c35cfc89",
+  "gold_result_preview": [
+    {
+      "station_id": "0254",
+      "name": "Kawaihae",
+      "island": "Hawaii",
+      "elev_m": "113",
+      "days_with_data": "452",
+      "total_mm": "436.7",
+      "avg_daily_mm": "0.97",
+      "est_annual_mm": "353"
+    },
+    {
+      "station_id": "0121",
+      "name": "L\u012bpoa",
+      "island": "Maui",
+      "elev_m": "88",
+      "days_with_data": "861",
+      "total_mm": "1164.7",
+      "avg_daily_mm": "1.35",
+      "est_annual_mm": "494"
+    },
+    {
+      "station_id": "0119",
+      "name": "Kula Agricultural Experiment Station",
+      "island": "Maui",
+      "elev_m": "964",
+      "days_with_data": "1460",
+      "total_mm": "2056.9",
+      "avg_daily_mm": "1.41",
+      "est_annual_mm": "514"
+    },
+    {
+      "station_id": "0286",
+      "name": "P\u0101lamanui",
+      "island": "Hawaii",
+      "elev_m": "264",
+      "days_with_data": "1408",
+      "total_mm": "2030.7",
+      "avg_daily_mm": "1.44",
+      "est_annual_mm": "526"
+    },
+    {
+      "station_id": "0132",
+      "name": "Olowalu",
+      "island": "Maui",
+      "elev_m": "54",
+      "days_with_data": "671",
+      "total_mm": "1038.0",
+      "avg_daily_mm": "1.55",
+      "est_annual_mm": "565"
+    },
+    {
+      "station_id": "0431",
+      "name": "Anapuka",
+      "island": "Molokai",
+      "elev_m": "68",
+      "days_with_data": "760",
+      "total_mm": "1203.2",
+      "avg_daily_mm": "1.58",
+      "est_annual_mm": "578"
+    },
+    {
+      "station_id": "0287",
+      "name": "M\u0101malahoa",
+      "island": "Hawaii",
+      "elev_m": "603",
+      "days_with_data": "1460",
+      "total_mm": "2336.5",
+      "avg_daily_mm": "1.60",
+      "est_annual_mm": "584"
+    },
+    {
+      "station_id": "0252",
+      "name": "L\u0101l\u0101milo",
+      "island": "Hawaii",
+      "elev_m": "802",
+      "days_with_data": "1096",
+      "total_mm": "1857.9",
+      "avg_daily_mm": "1.70",
+      "est_annual_mm": "619"
+    },
+    {
+      "station_id": "0118",
+      "name": "P\u016blehu",
+      "island": "Maui",
+      "elev_m": "427",
+      "days_with_data": "838",
+      "total_mm": "1438.9",
+      "avg_daily_mm": "1.72",
+      "est_annual_mm": "627"
+    },
+    {
+      "station_id": "0242",
+      "name": "Kai\u0101ulu Pu\u02bbuwa\u02bbawa\u02bba",
+      "island": "Hawaii",
+      "elev_m": "1161",
+      "days_with_data": "970",
+      "total_mm": "1775.4",
+      "avg_daily_mm": "1.83",
+      "est_annual_mm": "668"
+    }
+  ],
+  "draft_sql": "-- Driest stations by average daily rainfall (mm/day) over full history\n-- Requires at least 1 year of data to filter out stations with sparse records\nSELECT\n  s.station_id,\n  s.name,\n  s.island,\n  ROUND(s.elevation_m::numeric, 0) AS elev_m,\n  COUNT(*) AS days_with_data,\n  ROUND(SUM(d.rainfall_mm)::numeric, 1) AS total_mm,\n  ROUND(AVG(d.rainfall_mm)::numeric, 2) AS avg_daily_mm,\n  ROUND((SUM(d.rainfall_mm) / COUNT(*) * 365)::numeric, 0) AS est_annual_mm\nFROM mv_daily_station_summary d\nJOIN mesonet_stations s ON s.station_id = d.station_id\nWHERE d.rainfall_mm IS NOT NULL\nGROUP BY s.station_id, s.name, s.island, s.elevation_m\nHAVING COUNT(*) > 365\nORDER BY AVG(d.rainfall_mm) ASC\nLIMIT 10;\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "rainfall",
+    "climatology",
+    "station-ranking",
+    "spatial-analysis"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Identify the driest location in the Hawaiian mesonet network based on long-term average daily rainfall",
+  "scientific_context": "Hawaiian rainfall is dominated by orographic effects; leeward coasts sit in rain shadows and receive <500mm/yr vs >5000mm/yr on windward slopes",
+  "reasoning_sketch": "1. Join daily summaries with station metadata 2. Filter to stations with >1yr data 3. Rank by avg daily rainfall ascending",
+  "expected_answer_shape": "Ranked table of 10 stations with name, island, elevation, avg rainfall",
+  "pitfalls": [
+    "Stations with sparse data could appear artificially dry",
+    "Mesonet may not cover the actual driest point"
+  ],
+  "follow_up_questions": [
+    "How does this compare to published rainfall atlases?",
+    "What is the wettest station for comparison?"
+  ],
+  "assumptions": []
+}

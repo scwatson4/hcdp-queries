@@ -1,0 +1,1 @@
+Kawaihae on the Big Island is the driest station in the mesonet network, averaging just 0.97 mm/day (estimated ~353 mm or ~14 inches per year). It sits at 113 m elevation on the dry leeward Kohala coast, in the rain shadow of Mauna Kea and the Kohala Mountains. This matches the well-known geographic fact that the Kohala coast is one of the driest areas in all of Hawaii.

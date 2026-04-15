@@ -1,0 +1,11 @@
+station_id,name,island,elev_m,days_with_data,total_mm,avg_daily_mm,est_annual_mm
+0254,Kawaihae,Hawaii,113,452,436.7,0.97,353
+0121,Līpoa,Maui,88,861,1164.7,1.35,494
+0119,Kula Agricultural Experiment Station,Maui,964,1460,2056.9,1.41,514
+0286,Pālamanui,Hawaii,264,1408,2030.7,1.44,526
+0132,Olowalu,Maui,54,671,1038.0,1.55,565
+0431,Anapuka,Molokai,68,760,1203.2,1.58,578
+0287,Māmalahoa,Hawaii,603,1460,2336.5,1.60,584
+0252,Lālāmilo,Hawaii,802,1096,1857.9,1.70,619
+0118,Pūlehu,Maui,427,838,1438.9,1.72,627
+0242,Kaiāulu Puʻuwaʻawaʻa,Hawaii,1161,970,1775.4,1.83,668

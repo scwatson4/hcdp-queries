@@ -1,0 +1,84 @@
+{
+  "question_id": "a55d3498-6248-44fe-a373-5a61cec9abb7",
+  "question_nl": "How many gallons of rain came down across the Hawaiian Islands in March 2026?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "33d61bf156dc14693b1caad7edbca5670b1239e214476d7f53d6d1271188f157",
+  "gold_result_preview": [
+    {
+      "island": "Hawaii",
+      "stations": "27",
+      "avg_daily_mm": "15.20",
+      "monthly_total_per_station_mm": "471.34"
+    },
+    {
+      "island": "Maui",
+      "stations": "23",
+      "avg_daily_mm": "25.34",
+      "monthly_total_per_station_mm": "785.67"
+    },
+    {
+      "island": "Oahu",
+      "stations": "10",
+      "avg_daily_mm": "24.38",
+      "monthly_total_per_station_mm": "755.89"
+    },
+    {
+      "island": "Kauai",
+      "stations": "6",
+      "avg_daily_mm": "8.07",
+      "monthly_total_per_station_mm": "250.29"
+    },
+    {
+      "island": "Molokai",
+      "stations": "4",
+      "avg_daily_mm": "22.83",
+      "monthly_total_per_station_mm": "707.82"
+    },
+    {
+      "island": "Unknown",
+      "stations": "4",
+      "avg_daily_mm": "21.61",
+      "monthly_total_per_station_mm": "670.01"
+    }
+  ],
+  "draft_sql": "-- Per-island average daily rainfall and station count for March 2026\n-- Used to estimate total volume of rain across all Hawaiian islands\nSELECT\n  s.island,\n  COUNT(DISTINCT d.station_id) AS stations,\n  ROUND(AVG(d.rainfall_mm)::numeric, 2) AS avg_daily_mm,\n  ROUND(SUM(d.rainfall_mm)::numeric / COUNT(DISTINCT d.station_id), 2) AS monthly_total_per_station_mm\nFROM mv_daily_station_summary d\nJOIN mesonet_stations s ON s.station_id = d.station_id\nWHERE d.date_hst >= '2026-03-01' AND d.date_hst < '2026-04-01'\n  AND d.rainfall_mm IS NOT NULL\nGROUP BY s.island\nORDER BY stations DESC;\n\n-- Also used the historical station network for a better statewide average:\n-- SELECT datatype, COUNT(*), ROUND(AVG(value)::numeric, 2) AS avg_value\n-- FROM historical_station_values\n-- WHERE date = '2026-03-01' AND datatype = 'rainfall'\n-- GROUP BY datatype;\n-- Result: 133 stations, avg 529.03 mm\n\n-- Volume calculation:\n-- Total island land area: 16,627 km\u00b2\n-- Average rainfall (133 historical stations): 529.03 mm\n-- Volume = 16,627 km\u00b2 \u00d7 0.52903 m = 8,796,181,810 m\u00b3\n-- = 8,796,181,810,000 liters\n-- = 2,323,704,941,111 gallons\n-- \u2248 2.3 trillion gallons\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "rainfall",
+    "volumetric-estimate",
+    "multi-island",
+    "unit-conversion"
+  ],
+  "required_tools": [
+    "sql_query",
+    "python_calc"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Estimate total volume of precipitation across the Hawaiian archipelago for a given month",
+  "scientific_context": "Requires bridging point-station measurements to area-wide volumetric estimate using island land areas and spatial averaging",
+  "reasoning_sketch": "1. Query per-island avg rainfall from station network 2. Use historical station network (better coverage) for statewide avg 3. Multiply avg depth \u00d7 total land area \u2192 volume 4. Convert m\u00b3 \u2192 gallons",
+  "expected_answer_shape": "Single scalar: total gallons (order of magnitude: trillions)",
+  "pitfalls": [
+    "Station placement bias toward settlements",
+    "Extreme spatial heterogeneity in Hawaiian rainfall",
+    "Land-only estimate excludes ocean",
+    "Orographic effects make simple averaging unreliable"
+  ],
+  "follow_up_questions": [
+    "How does this compare to the HCDP gridded raster estimate?",
+    "What fraction of this rain falls on the Big Island vs smaller islands?"
+  ],
+  "assumptions": [
+    "Total Hawaiian island land area = 16,627 km\u00b2",
+    "Historical station network avg (133 stations) is representative",
+    "March 2026 avg rainfall = 529.03 mm statewide"
+  ]
+}

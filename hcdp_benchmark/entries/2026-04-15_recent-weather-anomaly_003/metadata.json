@@ -1,0 +1,111 @@
+{
+  "question_id": "1742a117-06ef-4b3d-adc8-fa0f9af25770",
+  "question_nl": "What was the most recent weather anomaly in Hawaii?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "55c8fe600a4f68c980de11d910672c1f4517863db4362565038f91b14ee1dec5",
+  "gold_result_preview": [
+    {
+      "date_hst": "2026-03-14",
+      "name": "N\u0101huku",
+      "island": "Hawaii",
+      "rainfall_mm": "711.0",
+      "rainfall_inches": "28.0"
+    },
+    {
+      "date_hst": "2026-03-14",
+      "name": "Pu\u02bbuwa\u02bbawa\u02bba",
+      "island": "Hawaii",
+      "rainfall_mm": "676.7",
+      "rainfall_inches": "26.6"
+    },
+    {
+      "date_hst": "2026-03-14",
+      "name": "Kuiki",
+      "island": "Maui",
+      "rainfall_mm": "662.7",
+      "rainfall_inches": "26.1"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "name": "Haleakal\u0101 Summit",
+      "island": "Maui",
+      "rainfall_mm": "635.0",
+      "rainfall_inches": "25.0"
+    },
+    {
+      "date_hst": "2026-02-08",
+      "name": "Laup\u0101hoehoe",
+      "island": "Hawaii",
+      "rainfall_mm": "598.9",
+      "rainfall_inches": "23.6"
+    },
+    {
+      "date_hst": "2026-03-14",
+      "name": "Kaiholena",
+      "island": "Unknown",
+      "rainfall_mm": "537.0",
+      "rainfall_inches": "21.1"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "name": "Kuiki",
+      "island": "Maui",
+      "rainfall_mm": "510.3",
+      "rainfall_inches": "20.1"
+    },
+    {
+      "date_hst": "2026-03-14",
+      "name": "Haleakal\u0101 Summit",
+      "island": "Maui",
+      "rainfall_mm": "497.6",
+      "rainfall_inches": "19.6"
+    },
+    {
+      "date_hst": "2026-03-14",
+      "name": "P\u014dhaku P\u0101laha",
+      "island": "Maui",
+      "rainfall_mm": "455.6",
+      "rainfall_inches": "17.9"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "name": "N\u0113n\u0113 Nest",
+      "island": "Maui",
+      "rainfall_mm": "439.9",
+      "rainfall_inches": "17.3"
+    }
+  ],
+  "draft_sql": "-- Top 20 extreme rainfall days across all stations in last 6 months\nSELECT\n  d.date_hst,\n  s.name,\n  s.island,\n  ROUND(d.rainfall_mm::numeric, 1) AS rainfall_mm,\n  ROUND((d.rainfall_mm / 25.4)::numeric, 1) AS rainfall_inches\nFROM mv_daily_station_summary d\nJOIN mesonet_stations s ON s.station_id = d.station_id\nWHERE d.date_hst >= '2025-10-01'\n  AND d.rainfall_mm IS NOT NULL\nORDER BY d.rainfall_mm DESC\nLIMIT 20;\n\n-- Supporting query: daily totals around the event\n-- SELECT date_hst, COUNT(DISTINCT station_id), AVG(rainfall_mm), MAX(rainfall_mm), SUM(rainfall_mm)\n-- FROM mv_daily_station_summary\n-- WHERE date_hst BETWEEN '2026-03-10' AND '2026-03-18' AND rainfall_mm IS NOT NULL\n-- GROUP BY date_hst ORDER BY date_hst;\n-- Result: March 14 averaged 174.6 mm/station (30x normal), 46 of 74 stations over 100mm\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "extreme-events",
+    "rainfall",
+    "multi-island",
+    "anomaly-detection"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Identify the most significant recent weather event by finding extreme rainfall readings across the station network",
+  "scientific_context": "Hawaii experiences extreme rainfall from Kona lows, tropical cyclones, and orographic enhancement. Events affecting multiple islands simultaneously suggest synoptic-scale forcing.",
+  "reasoning_sketch": "1. Query top daily rainfall readings in last 6 months 2. Identify clustering of extreme days 3. Characterize spatial extent and duration of the event",
+  "expected_answer_shape": "Table of top 20 station-day rainfall readings, plus narrative characterizing the event",
+  "pitfalls": [
+    "Sensor errors (e.g., 7999 codes) can masquerade as extreme events",
+    "Anomaly definition is subjective without a statistical baseline"
+  ],
+  "follow_up_questions": [
+    "Was this a Kona low or tropical system?",
+    "Were there flooding reports associated with this event?"
+  ],
+  "assumptions": []
+}

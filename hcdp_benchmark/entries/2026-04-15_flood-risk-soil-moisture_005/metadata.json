@@ -1,0 +1,143 @@
+{
+  "question_id": "a74daf1a-b81a-4196-a125-f86d6a782a0c",
+  "question_nl": "What stations/regions are most at risk of flooding? Check soil moisture index for all stations.",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:15:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "15df749f5dd71360a3d8ff6442fe14085beb74c5b1b7c8375cdf3199b7cf29da",
+  "gold_result_preview": [
+    {
+      "station_id": "0521",
+      "name": "Ka\u02bbala",
+      "island": "Oahu",
+      "elev_m": "1205",
+      "current_vwc_pct": "74.1",
+      "vwc_change_7d_pct": "-0.2",
+      "rain_48h_mm": "20.8",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0251",
+      "name": "Kehena Ditch Cabin",
+      "island": "Hawaii",
+      "elev_m": "1158",
+      "current_vwc_pct": "73.5",
+      "vwc_change_7d_pct": "1.6",
+      "rain_48h_mm": "11.4",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0531",
+      "name": "Kaluanui Ridge",
+      "island": "Oahu",
+      "elev_m": "239",
+      "current_vwc_pct": "70.6",
+      "vwc_change_7d_pct": "2.3",
+      "rain_48h_mm": "33.5",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0255",
+      "name": "Waipo\u02bbo",
+      "island": "Hawaii",
+      "elev_m": "1381",
+      "current_vwc_pct": "70.0",
+      "vwc_change_7d_pct": "-0.2",
+      "rain_48h_mm": "2.6",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0541",
+      "name": "Ka\u02bba\u02bbawa Makai",
+      "island": "Oahu",
+      "elev_m": "3",
+      "current_vwc_pct": "62.8",
+      "vwc_change_7d_pct": "4.7",
+      "rain_48h_mm": "22.6",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0601",
+      "name": "Waip\u0101",
+      "island": "Kauai",
+      "elev_m": "5",
+      "current_vwc_pct": "59.8",
+      "vwc_change_7d_pct": "8.4",
+      "rain_48h_mm": "0.5",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "island": "Oahu",
+      "elev_m": "151",
+      "current_vwc_pct": "59.5",
+      "vwc_change_7d_pct": "-0.8",
+      "rain_48h_mm": "7.9",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0502",
+      "name": "Nu\u02bbuanu Reservoir Number 1",
+      "island": "Oahu",
+      "elev_m": "117",
+      "current_vwc_pct": "57.1",
+      "vwc_change_7d_pct": "1.5",
+      "rain_48h_mm": "14.5",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0282",
+      "name": "Spencer",
+      "island": "Hawaii",
+      "elev_m": "469",
+      "current_vwc_pct": "57.1",
+      "vwc_change_7d_pct": "-2.6",
+      "rain_48h_mm": "0.8",
+      "flood_risk": "MODERATE"
+    },
+    {
+      "station_id": "0412",
+      "name": "Honoulimalo\u02bbo",
+      "island": "Molokai",
+      "elev_m": "402",
+      "current_vwc_pct": "56.7",
+      "vwc_change_7d_pct": "5.1",
+      "rain_48h_mm": "41.9",
+      "flood_risk": "MODERATE"
+    }
+  ],
+  "draft_sql": "-- Flood risk assessment combining current soil moisture, 7-day trend, and recent rainfall\n-- SM_1_Avg = soil volumetric water content (m\u00b3/m\u00b3), values 0-1 (100% = fully saturated)\n-- Excludes value >= 1 which indicates sensor error (e.g., 7999 from broken probes)\nWITH current_sm AS (\n  SELECT DISTINCT ON (station_id)\n    station_id, value AS current_vwc, timestamp\n  FROM mesonet_measurements\n  WHERE var_id = 'SM_1_Avg' AND value IS NOT NULL AND value < 1\n  ORDER BY station_id, timestamp DESC\n),\nweek_ago_sm AS (\n  SELECT DISTINCT ON (station_id)\n    station_id, value AS prev_vwc\n  FROM mesonet_measurements\n  WHERE var_id = 'SM_1_Avg' AND value IS NOT NULL AND value < 1\n    AND timestamp BETWEEN '2026-04-08 00:00:00+00' AND '2026-04-08 23:59:59+00'\n  ORDER BY station_id, timestamp DESC\n),\nrecent_rain AS (\n  SELECT station_id, SUM(value) AS rain_48h_mm\n  FROM mesonet_measurements\n  WHERE var_id = 'RF_1_Tot300s' AND value IS NOT NULL AND value < 7000\n    AND timestamp >= now() - interval '48 hours'\n  GROUP BY station_id\n)\nSELECT\n  c.station_id,\n  s.name,\n  s.island,\n  ROUND(s.elevation_m::numeric, 0) AS elev_m,\n  ROUND((c.current_vwc * 100)::numeric, 1) AS current_vwc_pct,\n  ROUND(((c.current_vwc - w.prev_vwc) * 100)::numeric, 1) AS vwc_change_7d_pct,\n  ROUND(COALESCE(r.rain_48h_mm, 0)::numeric, 1) AS rain_48h_mm,\n  CASE\n    WHEN c.current_vwc > 0.55 AND COALESCE(r.rain_48h_mm, 0) > 50 THEN 'HIGH'\n    WHEN c.current_vwc > 0.50 OR (c.current_vwc > 0.40 AND COALESCE(r.rain_48h_mm, 0) > 100) THEN 'MODERATE'\n    WHEN c.current_vwc > 0.40 THEN 'LOW'\n    ELSE 'MINIMAL'\n  END AS flood_risk\nFROM current_sm c\nJOIN mesonet_stations s ON s.station_id = c.station_id\nLEFT JOIN week_ago_sm w ON w.station_id = c.station_id\nLEFT JOIN recent_rain r ON r.station_id = c.station_id\nORDER BY c.current_vwc DESC\nLIMIT 25;\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "soil-moisture",
+    "flood-risk",
+    "hydrology",
+    "multi-variable",
+    "CTE"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Assess current flood vulnerability by combining soil saturation levels, moisture trends, and recent rainfall across the mesonet network",
+  "scientific_context": "Flood risk depends on antecedent soil moisture (saturated soil = zero infiltration capacity = 100% runoff). VWC > 0.50 m\u00b3/m\u00b3 indicates high saturation for most Hawaiian soil types.",
+  "reasoning_sketch": "1. Get latest SM_1_Avg per station 2. Get SM_1_Avg from 7 days ago for trend 3. Sum recent 48h rainfall 4. Combine with heuristic flood risk classification 5. Rank by saturation",
+  "expected_answer_shape": "Table of 25 stations ranked by soil moisture with trend and flood risk classification",
+  "pitfalls": [
+    "Sensor error 7999 appears in soil moisture too (station 0122)",
+    "Flood thresholds vary by soil type",
+    "Point measurements miss topographic effects"
+  ],
+  "follow_up_questions": [
+    "How do these readings compare to pre-flood conditions in historical Hawaii floods?",
+    "Which stations are near populated areas or critical infrastructure?"
+  ],
+  "assumptions": []
+}
