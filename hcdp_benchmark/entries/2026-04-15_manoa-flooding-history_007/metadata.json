@@ -1,0 +1,131 @@
+{
+  "question_id": "ac89d0bd-370f-4658-b039-ba4d5955a28d",
+  "question_nl": "When would have been the last time Manoa Valley might have experienced flooding? Consider rainfall and soil moisture index.",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T01:00:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "507b7df3112eb68baa61989ead307d997d698b240545275fb44eceb7164e1e98",
+  "gold_result_preview": [
+    {
+      "date_hst": "2026-03-13",
+      "station_id": "0506",
+      "name": "Kal\u0101wahine",
+      "rainfall_mm": "217.9",
+      "soil_vwc_lyon": "0.652",
+      "soil_vwc_pct": "65.2"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "rainfall_mm": "197.6",
+      "soil_vwc_lyon": "0.652",
+      "soil_vwc_pct": "65.2"
+    },
+    {
+      "date_hst": "2025-01-26",
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "rainfall_mm": "195.3",
+      "soil_vwc_lyon": "0.477",
+      "soil_vwc_pct": "47.7"
+    },
+    {
+      "date_hst": "2025-01-26",
+      "station_id": "0506",
+      "name": "Kal\u0101wahine",
+      "rainfall_mm": "184.2",
+      "soil_vwc_lyon": "0.477",
+      "soil_vwc_pct": "47.7"
+    },
+    {
+      "date_hst": "2026-03-20",
+      "station_id": "0506",
+      "name": "Kal\u0101wahine",
+      "rainfall_mm": "179.6",
+      "soil_vwc_lyon": "0.648",
+      "soil_vwc_pct": "64.8"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "station_id": "0504",
+      "name": "Waolani",
+      "rainfall_mm": "177.8",
+      "soil_vwc_lyon": "0.652",
+      "soil_vwc_pct": "65.2"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "station_id": "0502",
+      "name": "Nu\u02bbuanu Reservoir Number 1",
+      "rainfall_mm": "177.4",
+      "soil_vwc_lyon": "0.652",
+      "soil_vwc_pct": "65.2"
+    },
+    {
+      "date_hst": "2026-03-13",
+      "station_id": "0503",
+      "name": "Upper Waolani",
+      "rainfall_mm": "173.5",
+      "soil_vwc_lyon": "0.652",
+      "soil_vwc_pct": "65.2"
+    },
+    {
+      "date_hst": "2026-03-23",
+      "station_id": "0505",
+      "name": "N\u0101pu\u02bbumai\u02bba",
+      "rainfall_mm": "163.1",
+      "soil_vwc_lyon": "0.629",
+      "soil_vwc_pct": "62.9"
+    },
+    {
+      "date_hst": "2024-10-26",
+      "station_id": "0506",
+      "name": "Kal\u0101wahine",
+      "rainfall_mm": "155.2",
+      "soil_vwc_lyon": "0.534",
+      "soil_vwc_pct": "53.4"
+    }
+  ],
+  "draft_sql": "-- Heavy rainfall days (>50mm) at Manoa-area stations with concurrent soil moisture\nWITH manoa_heavy_days AS (\n  SELECT d.date_hst, d.station_id, s.name,\n    ROUND(d.rainfall_mm::numeric, 1) AS rainfall_mm\n  FROM mv_daily_station_summary d\n  JOIN mesonet_stations s ON s.station_id = d.station_id\n  WHERE d.station_id IN ('0501','0502','0503','0504','0505','0506')\n    AND d.rainfall_mm > 50\n),\nsoil AS (\n  SELECT date_trunc('day', timestamp)::date AS day,\n    ROUND(AVG(value)::numeric, 3) AS avg_vwc\n  FROM mesonet_measurements\n  WHERE station_id = '0501' AND var_id = 'SM_1_Avg' AND value IS NOT NULL AND value < 1\n  GROUP BY date_trunc('day', timestamp)::date\n)\nSELECT h.date_hst, h.station_id, h.name, h.rainfall_mm,\n  s.avg_vwc AS soil_vwc_lyon,\n  ROUND((s.avg_vwc * 100)::numeric, 1) AS soil_vwc_pct\nFROM manoa_heavy_days h\nLEFT JOIN soil s ON s.day = h.date_hst\nORDER BY h.rainfall_mm DESC\nLIMIT 30;\n\n-- Supporting queries used in analysis:\n\n-- Multi-day rainfall context at Lyon Arboretum around top events:\n-- Mar 10-15 2026: 2.0 + 64.3 + 52.1 + 197.6 + 59.2 + 2.8 = 376mm over 4 days\n-- Jan 23-28 2025: 0 + 0 + 0 + 195.3 + 22.4 + 0.3 = 218mm (single-day burst)\n\n-- Soil moisture trajectory at Lyon Arboretum:\n-- Pre-March 13: 64% VWC (already saturated from 2 prior rain days)\n-- Pre-Jan 26:   46% VWC (drier, soil could absorb rainfall)\n\n-- Peak hourly intensity at Lyon Arboretum:\n-- March 13: 16.8 mm/hr sustained over multiple hours\n-- Jan 26:   14.7 mm/hr concentrated in one hour\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "flooding",
+    "soil-moisture",
+    "rainfall",
+    "multi-variable",
+    "temporal-analysis",
+    "hydrology",
+    "manoa"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "",
+  "intent": "Identify the most recent probable flooding event in Manoa Valley by combining rainfall intensity, multi-day accumulation, antecedent soil moisture, and watershed-wide conditions",
+  "scientific_context": "Flash flooding depends on rainfall intensity AND antecedent soil moisture. Saturated soil (VWC >60%) has zero infiltration capacity, so all rainfall becomes surface runoff. Multi-day rain events that saturate soil before the heaviest day produce worse flooding than single-day bursts on dry soil.",
+  "reasoning_sketch": "1. Find heavy rainfall days (>50mm) at Manoa-area stations 2. For top candidates, check antecedent soil moisture (SM_1_Avg) in preceding days 3. Check multi-day rainfall context (was it a prolonged event?) 4. Check hourly intensity for flash flood potential 5. Check upstream watershed stations for simultaneous heavy rain 6. Compare events holistically \u2014 the worst flood is the one with saturated soil + heavy rain + upstream drainage",
+  "expected_answer_shape": "Identification of a specific date with supporting evidence from multiple variables",
+  "pitfalls": [
+    "Similar daily rainfall totals can have very different flood outcomes depending on soil moisture",
+    "Must consider upstream watershed, not just the valley floor station",
+    "Hourly intensity matters more than daily totals for flash floods",
+    "No stream gauge data to confirm actual flooding"
+  ],
+  "follow_up_questions": [
+    "Were there actual flood reports on March 13, 2026?",
+    "How does this compare to the 2004 Manoa flood?",
+    "What soil moisture threshold reliably predicts flooding in this watershed?"
+  ],
+  "assumptions": [
+    "Lyon Arboretum soil moisture is representative of the Manoa watershed",
+    "VWC > 60% indicates near-saturation for Hawaiian soils",
+    "Stations 0501-0506 collectively represent the Manoa/Nuuanu drainage basin"
+  ]
+}
