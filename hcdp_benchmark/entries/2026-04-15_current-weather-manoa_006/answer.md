@@ -1,0 +1,1 @@
+As of 2026-04-15 00:45 UTC (2:45 PM HST) at Lyon Arboretum (151m elevation in upper Manoa Valley): 25.6°C (78°F), 85% humidity, calm winds (0.16 m/s), no rain currently or in the last 24 hours. Soil moisture is 59.4% VWC — still wet from prior rains. Warm, humid, and dry.

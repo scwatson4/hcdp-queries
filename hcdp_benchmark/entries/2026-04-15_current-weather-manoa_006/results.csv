@@ -1,0 +1,6 @@
+station_id,name,var_id,description,units,value,timestamp
+0501,Lyon Arboretum,RF_1_Tot300s,"Rainfall, 5-minute total",mm,0,2026-04-15 00:45:00+00
+0501,Lyon Arboretum,RH_1_Avg,"Relative humidity, sensor 1",%,85,2026-04-15 00:45:00+00
+0501,Lyon Arboretum,SM_1_Avg,Soil volumetric water content,m³/m³,0.594,2026-04-15 00:45:00+00
+0501,Lyon Arboretum,Tair_1_Avg,"Air temperature, sensor 1",°C,25.59,2026-04-15 00:45:00+00
+0501,Lyon Arboretum,WS_1_Avg,"Wind speed, scalar average",m/s,0.157,2026-04-15 00:45:00+00

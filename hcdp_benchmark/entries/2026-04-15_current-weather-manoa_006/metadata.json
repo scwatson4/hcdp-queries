@@ -1,0 +1,89 @@
+{
+  "question_id": "179a1b7a-28a2-4d25-b14a-a4f013e8d1e4",
+  "question_nl": "What is the weather right now in Manoa?",
+  "schema_version": "v1",
+  "as_of": "2026-04-15T00:45:00Z",
+  "gold_sql": null,
+  "gold_result_hash": "19f89ec441f7278a593f84fb25c592ae5ed4249b5eed687dc4d74f5534ae92b4",
+  "gold_result_preview": [
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "var_id": "RF_1_Tot300s",
+      "description": "Rainfall, 5-minute total",
+      "units": "mm",
+      "value": "0",
+      "timestamp": "2026-04-15 00:45:00+00"
+    },
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "var_id": "RH_1_Avg",
+      "description": "Relative humidity, sensor 1",
+      "units": "%",
+      "value": "85",
+      "timestamp": "2026-04-15 00:45:00+00"
+    },
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "var_id": "SM_1_Avg",
+      "description": "Soil volumetric water content",
+      "units": "m\u00b3/m\u00b3",
+      "value": "0.594",
+      "timestamp": "2026-04-15 00:45:00+00"
+    },
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "var_id": "Tair_1_Avg",
+      "description": "Air temperature, sensor 1",
+      "units": "\u00b0C",
+      "value": "25.59",
+      "timestamp": "2026-04-15 00:45:00+00"
+    },
+    {
+      "station_id": "0501",
+      "name": "Lyon Arboretum",
+      "var_id": "WS_1_Avg",
+      "description": "Wind speed, scalar average",
+      "units": "m/s",
+      "value": "0.157",
+      "timestamp": "2026-04-15 00:45:00+00"
+    }
+  ],
+  "draft_sql": "-- Current weather at the closest mesonet station to Manoa (Lyon Arboretum, station 0501)\n-- Retrieves the most recent reading for key weather variables\nSELECT\n  m.station_id,\n  s.name,\n  m.var_id,\n  v.description,\n  v.units,\n  m.value,\n  m.timestamp\nFROM mesonet_measurements m\nJOIN mesonet_variables v ON v.var_id = m.var_id\nJOIN mesonet_stations s ON s.station_id = m.station_id\nWHERE m.station_id = '0501'\n  AND m.var_id IN ('Tair_1_Avg', 'RH_1_Avg', 'WS_1_Avg', 'WD_1_Avg', 'RF_1_Tot300s', 'SRad_1_Avg', 'SM_1_Avg', 'BP_1_Avg')\n  AND m.timestamp = (SELECT MAX(timestamp) FROM mesonet_measurements WHERE station_id = '0501')\nORDER BY m.var_id;\n\n-- Supporting query: 24-hour rainfall total\n-- SELECT ROUND(SUM(value)::numeric, 1) AS rain_24h_mm\n-- FROM mesonet_measurements\n-- WHERE station_id = '0501' AND var_id = 'RF_1_Tot300s'\n--   AND timestamp >= now() - interval '24 hours';\n-- Result: 0.0 mm\n",
+  "verified": false,
+  "difficulty": null,
+  "domain_tags": [
+    "current-conditions",
+    "station-lookup",
+    "multi-variable",
+    "location-resolution"
+  ],
+  "required_tools": [
+    "sql_query"
+  ],
+  "evaluation_type": "execution_match",
+  "timeout_s": 120,
+  "max_turns": 20,
+  "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
+  "license": "TBD",
+  "notes": "Point-in-time query; results change every 5 minutes",
+  "intent": "Resolve a colloquial location name to a mesonet station and retrieve current multi-variable weather conditions",
+  "scientific_context": "Manoa Valley is a wet windward valley on Oahu; Lyon Arboretum (0501) at 151m elevation is the representative station",
+  "reasoning_sketch": "1. Search station names for Manoa-area stations 2. Select Lyon Arboretum as best match 3. Get latest timestamp readings for key weather vars 4. Optionally sum recent rainfall for context",
+  "expected_answer_shape": "Table of variable readings (temp, humidity, wind, rain, soil moisture) at a single timestamp",
+  "pitfalls": [
+    "Must resolve 'Manoa' to a station name \u2014 no station is literally named 'Manoa'",
+    "Results are ephemeral \u2014 snapshot changes every 5 min"
+  ],
+  "follow_up_questions": [
+    "How does current temperature compare to the April average?",
+    "When did it last rain in Manoa?"
+  ],
+  "assumptions": [
+    "Lyon Arboretum is representative of Manoa Valley weather",
+    "Latest timestamp in DB is approximately 'right now'"
+  ]
+}
