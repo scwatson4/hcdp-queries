@@ -107,7 +107,7 @@
   "max_turns": 20,
   "data_source_attribution": "HCDP - Hawaii Climate Data Portal",
   "license": "TBD",
-  "notes": "",
+  "notes": "Corrected after initial analysis missed March 23 event. Daily totals are misleading; hourly intensity and lower-valley stations are critical for urban flood assessment.",
   "intent": "Identify the most recent probable flooding event in Manoa Valley by combining rainfall intensity, multi-day accumulation, antecedent soil moisture, and watershed-wide conditions",
   "scientific_context": "Flash flooding depends on rainfall intensity AND antecedent soil moisture. Saturated soil (VWC >60%) has zero infiltration capacity, so all rainfall becomes surface runoff. Multi-day rain events that saturate soil before the heaviest day produce worse flooding than single-day bursts on dry soil.",
   "reasoning_sketch": "1. Find heavy rainfall days (>50mm) at Manoa-area stations 2. For top candidates, check antecedent soil moisture (SM_1_Avg) in preceding days 3. Check multi-day rainfall context (was it a prolonged event?) 4. Check hourly intensity for flash flood potential 5. Check upstream watershed stations for simultaneous heavy rain 6. Compare events holistically \u2014 the worst flood is the one with saturated soil + heavy rain + upstream drainage",
@@ -116,7 +116,9 @@
     "Similar daily rainfall totals can have very different flood outcomes depending on soil moisture",
     "Must consider upstream watershed, not just the valley floor station",
     "Hourly intensity matters more than daily totals for flash floods",
-    "No stream gauge data to confirm actual flooding"
+    "No stream gauge data to confirm actual flooding",
+    "Ranking by daily rainfall totals misses flash flood events with lower totals but extreme hourly intensity",
+    "Must check lower-valley stations (not just upper watershed) to assess campus/urban flooding"
   ],
   "follow_up_questions": [
     "Were there actual flood reports on March 13, 2026?",
