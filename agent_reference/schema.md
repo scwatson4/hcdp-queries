@@ -129,9 +129,23 @@ FROM ingestion_log ORDER BY id DESC LIMIT 5;
 
 ## Materialized Views
 
-### mv_daily_station_summary (69k+ rows)
+There are two parallel sets of matviews: **_raw** (unfiltered) and **_qc** (QC-filtered). **Always use the _qc versions for downstream analytics.** The _raw versions are preserved for QC research only.
 
-Pre-aggregated daily statistics per station. **Much faster than querying mesonet_measurements directly** for daily-level questions.
+### QC Filter (v_mesonet_measurements_qc)
+
+A non-materialized view that excludes:
+- NULL values
+- Sentinel codes: -9999, -999, 7999, 9999998, 8888, 7777, -8888, -7777
+- Per-variable physical range violations (temperature -10 to 50°C, rainfall 0-500mm, humidity 0-105%, etc.)
+- Uncalibrated radiation (UC suffix) and enclosure RH are passed through unfiltered
+
+This view is the source for all _qc matviews.
+
+---
+
+### mv_daily_station_summary_qc (70k+ rows) — **USE THIS ONE**
+
+Pre-aggregated daily statistics per station, QC-filtered. Safe to use without additional filtering.
 
 ```
 station_id        text
@@ -149,19 +163,26 @@ solar_rad_avg     double precision  -- daily average solar radiation
 soil_moisture_avg double precision  -- daily average soil VWC (m³/m³)
 ```
 
-**Unique index:** (station_id, date_hst)
-
-**Use this for:** daily rainfall rankings, daily temperature extremes, multi-day event analysis, monthly/annual aggregation.
-
-**WARNING:** `rainfall_mm` here may include 7999 sentinel values from bad sensors. Always filter or be aware (see `data_quality.md`).
+**Unique index:** idx_mv_daily_qc (station_id, date_hst)
 
 ---
 
-### mv_monthly_station_summary (2.4k+ rows)
+### mv_monthly_station_summary_qc (2.4k+ rows) — **USE THIS ONE**
 
-Same columns as daily but aggregated to monthly level. `month` column is first-of-month date.
+Same columns as daily but aggregated to monthly level. `month` column is first-of-month date. Sourced from the QC daily view.
 
-**Unique index:** (station_id, month)
+**Unique index:** idx_mv_monthly_qc (station_id, month)
+
+---
+
+### mv_daily_station_summary_raw / mv_monthly_station_summary_raw
+
+Same structure as the _qc versions but include ALL raw values — sentinels, NULLs, range violations. **Do not use for analytics** unless you are specifically researching data quality issues.
+
+**Known contamination in _raw views:**
+- Station 0122 soil_moisture_avg: ~5,333 (should be ~0.54) due to 7999 sentinels
+- Station 0115 rainfall_mm: inflated in March 2023 due to 7999 sentinels
+- Station 0153 tair_min: can show -175°C due to sensor faults
 
 ---
 

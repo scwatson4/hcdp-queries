@@ -54,13 +54,17 @@ Historical data updates are manual. Last update covered through March 2026.
 
 | Question type | Use this table |
 |--------------|---------------|
-| Current weather at a station | `mesonet_measurements` (latest timestamp) |
-| Daily rainfall/temp for a date range | `mv_daily_station_summary` (fast) |
-| Monthly/annual aggregation (2022+) | `mv_monthly_station_summary` or aggregate from daily MV |
-| Historical rainfall before 2022 | `historical_station_values` (monthly only) |
+| Current weather at a station | `v_mesonet_measurements_qc` (latest timestamp) or `mesonet_measurements` with manual filters |
+| Daily rainfall/temp for a date range | **`mv_daily_station_summary_qc`** (fast, clean) |
+| Monthly/annual aggregation (2022+) | **`mv_monthly_station_summary_qc`** or aggregate from daily QC MV |
+| Sub-daily analysis (hourly intensity, flood risk) | `v_mesonet_measurements_qc` with station/var/time filters |
+| Historical rainfall before 2022 | `historical_station_values` (monthly only, no QC view — apply manual checks) |
 | Hurricane/extreme event pre-2022 | `historical_station_values` (monthly proxy) |
 | Station metadata (name, location) | `mesonet_stations` |
 | Variable descriptions | `mesonet_variables` |
+| Data quality research | `mv_daily_station_summary_raw` / `mesonet_measurements` (unfiltered) |
 | Ingestion health | `ingestion_log` |
 
-**Rule of thumb:** If the answer can come from `mv_daily_station_summary`, use it — it's 1000x faster than querying `mesonet_measurements` directly. Only go to the raw measurements table when you need sub-daily resolution (hourly intensity, 5-minute readings).
+**Rule of thumb:** Use `mv_daily_station_summary_qc` for any daily-level question — it's 1000x faster than the raw table AND pre-filtered for quality. Only go to `v_mesonet_measurements_qc` or `mesonet_measurements` when you need sub-daily resolution (hourly intensity, 5-minute readings).
+
+**_qc vs _raw:** Always use `_qc` versions unless specifically investigating data quality. The `_raw` versions contain sentinel codes (7999, -9999), impossible temperatures (-175°C), and inflated soil moisture that will contaminate any aggregate.

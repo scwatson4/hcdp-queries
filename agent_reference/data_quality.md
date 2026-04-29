@@ -75,9 +75,24 @@ Some stations go offline for days/weeks without warning. If the latest reading i
 | 0245 | All | Since Jan 2026 | Station offline | Missing data, not bad data |
 | 0532 | All | Since Feb 2026 | Station offline | Missing data, not bad data |
 
-## Recommended global filters
+## Recommended approach: use _qc materialized views
 
-For any production query, start with:
+As of 2026-04-29, QC-filtered materialized views exist:
+- **`mv_daily_station_summary_qc`** — use instead of `mv_daily_station_summary_raw`
+- **`mv_monthly_station_summary_qc`** — use instead of `mv_monthly_station_summary_raw`
+- **`v_mesonet_measurements_qc`** — use instead of `mesonet_measurements` for raw 5-min data
+
+These exclude NULLs, sentinel codes, and physical range violations automatically. **Use _qc views by default.** Manual filters below are only needed if querying raw tables directly.
+
+The pressure variables (P_1_Avg, Psl_1_Avg) are in **kPa** not hPa. The QC view uses range 60-105 kPa.
+
+Uncalibrated radiation variables (suffix UC) are passed through unfiltered — treat with caution.
+
+Station-level QC (e.g., station 0122 soil moisture is unreliable even after filtering) is NOT applied in the _qc views — that requires a future station_quality reference table.
+
+## Manual filters (for raw table queries)
+
+If you must query `mesonet_measurements` directly:
 ```sql
 -- For rainfall
 WHERE var_id = 'RF_1_Tot300s'
@@ -90,7 +105,7 @@ WHERE var_id = 'SM_1_Avg'
   AND value IS NOT NULL
   AND value < 1                 -- exclude sentinel codes (7999)
 
--- For the daily materialized view
+-- For the raw daily materialized view
 WHERE rainfall_mm IS NOT NULL
   AND station_id != '0115'      -- exclude sensor-error-inflated station
 ```

@@ -31,28 +31,26 @@ WHERE station_id = '<sid>'
   AND timestamp >= now() - interval '<N> hours';
 ```
 
-## Daily rainfall for a date range (FAST — use MV)
+## Daily rainfall for a date range (FAST — use QC MV)
 
 ```sql
 SELECT date_hst, station_id, station_name, island, rainfall_mm
-FROM mv_daily_station_summary
+FROM mv_daily_station_summary_qc
 WHERE date_hst BETWEEN '<start>' AND '<end>'
   AND rainfall_mm IS NOT NULL
-  AND station_id != '0115'  -- exclude bad sensor data
 ORDER BY rainfall_mm DESC;
 ```
+No manual sentinel filters needed — the _qc view handles them.
 
 ## Heaviest rainfall days across the network
 
 ```sql
-SELECT d.date_hst, s.name, s.island,
+SELECT d.date_hst, d.station_name, d.island,
   ROUND(d.rainfall_mm::numeric, 1) AS mm,
   ROUND((d.rainfall_mm / 25.4)::numeric, 1) AS inches
-FROM mv_daily_station_summary d
-JOIN mesonet_stations s ON s.station_id = d.station_id
+FROM mv_daily_station_summary_qc d
 WHERE d.date_hst >= '<start>'
   AND d.rainfall_mm IS NOT NULL
-  AND d.station_id != '0115'
 ORDER BY d.rainfall_mm DESC
 LIMIT 20;
 ```
@@ -62,14 +60,14 @@ LIMIT 20;
 ```sql
 SELECT date_trunc('hour', timestamp) AS hour,
   ROUND(SUM(value)::numeric, 1) AS hourly_mm
-FROM mesonet_measurements
+FROM v_mesonet_measurements_qc
 WHERE station_id = '<sid>' AND var_id = 'RF_1_Tot300s'
-  AND value IS NOT NULL AND value < 7000
   AND timestamp >= '<start>' AND timestamp < '<end>'
 GROUP BY date_trunc('hour', timestamp)
 HAVING SUM(value) > 2
 ORDER BY SUM(value) DESC;
 ```
+No manual filters needed — v_mesonet_measurements_qc excludes sentinels and range violations.
 
 ## Flood risk assessment (soil moisture + rainfall)
 
@@ -77,14 +75,14 @@ ORDER BY SUM(value) DESC;
 WITH current_sm AS (
   SELECT DISTINCT ON (station_id)
     station_id, value AS current_vwc
-  FROM mesonet_measurements
-  WHERE var_id = 'SM_1_Avg' AND value IS NOT NULL AND value < 1
+  FROM v_mesonet_measurements_qc
+  WHERE var_id = 'SM_1_Avg'
   ORDER BY station_id, timestamp DESC
 ),
 recent_rain AS (
   SELECT station_id, SUM(value) AS rain_48h_mm
-  FROM mesonet_measurements
-  WHERE var_id = 'RF_1_Tot300s' AND value IS NOT NULL AND value < 7000
+  FROM v_mesonet_measurements_qc
+  WHERE var_id = 'RF_1_Tot300s'
     AND timestamp >= now() - interval '48 hours'
   GROUP BY station_id
 )
@@ -103,7 +101,7 @@ LEFT JOIN recent_rain r ON r.station_id = c.station_id
 ORDER BY c.current_vwc DESC;
 ```
 
-## Station ranking (wettest/driest) — with QC
+## Station ranking (wettest/driest)
 
 ```sql
 SELECT s.station_id, s.name, s.island,
@@ -111,15 +109,15 @@ SELECT s.station_id, s.name, s.island,
   COUNT(*) AS days_with_data,
   ROUND(AVG(d.rainfall_mm)::numeric, 2) AS avg_daily_mm,
   ROUND((SUM(d.rainfall_mm) / COUNT(*) * 365)::numeric, 0) AS est_annual_mm
-FROM mv_daily_station_summary d
+FROM mv_daily_station_summary_qc d
 JOIN mesonet_stations s ON s.station_id = d.station_id
 WHERE d.rainfall_mm IS NOT NULL
-  AND d.station_id != '0115'  -- exclude bad sensor data
 GROUP BY s.station_id, s.name, s.island, s.elevation_m
 HAVING COUNT(*) > 365  -- require at least 1 year of data
 ORDER BY AVG(d.rainfall_mm) ASC  -- ASC for driest, DESC for wettest
 LIMIT 10;
 ```
+No station exclusions needed — the _qc view already handles sentinel contamination.
 
 ## Annual rainfall trend (with reference panel — see methodology.md)
 
