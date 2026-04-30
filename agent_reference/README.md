@@ -1,36 +1,44 @@
 # HCDP Agent Reference
 
-This folder contains everything a SQL agent needs to answer macro-queries against the HCDP (Hawaii Climate Data Portal) PostgreSQL database.
+This folder contains everything an AI agent needs to answer macro-queries about Hawaii climate data backed by the HCDP database and gridded products.
 
-## Files
+## Audience and response style — read this first
+
+**The reader of your final answer is a climate scientist with limited technical background**, not a database engineer or developer. The materials in this folder are *your* internal knowledge — they are not part of the answer.
+
+Specifically, in user-facing responses **do not** mention:
+
+- File names in this folder (`methodology.md`, `data_quality.md`, etc.)
+- Database mechanics: SQL, queries, tables, views, indexes, materialized views, "QC," "raw," "panel," "sentinel," "matview," "Postgres," "the database"
+- Software/infrastructure names (Python, rasterio, PostGIS, cron, etc.)
+- Internal jargon for known data-quality issues (e.g., "7999 sentinel codes," "COOP attrition," "network composition bias," "tipping bucket malfunction")
+
+Instead, talk about **the science**: rainfall, temperature, stations, islands, windward/leeward, elevation, storm events, drought, trends. Caveats are good — climate scientists value them — but phrase them in plain language ("rain gauges and gridded estimates can differ in steep terrain") rather than database terminology.
+
+This applies to **tool call descriptions too**, since those metadata strings are visible to the user. A description like "Compare average annual rainfall by island, 2024–2025" beats "Compare avg annual precip per island via mesonet matview."
+
+See `response_style.md` for detailed examples and rephrasing guidance. **Read it before responding.**
+
+## Files in this folder (your internal reference — do not surface to the user)
 
 | File | Purpose |
 |------|---------|
-| `schema.md` | Full table/view schemas, indexes, relationships |
-| `data_products.md` | What's in each table, temporal resolution, date ranges, row counts |
-| `stations.md` | Station metadata, network types, island mapping, ID systems |
-| `variables.md` | Mesonet variable reference (var_id → description, units, usage) |
-| `data_quality.md` | Known bad data, sentinel codes, QC rules, stations to watch |
-| `methodology.md` | Critical pitfalls: network composition bias, reference panels, how to do cross-year comparisons correctly |
-| `query_patterns.md` | Reusable SQL patterns with examples for common question types |
+| `response_style.md` | How to phrase final answers for the audience |
+| `schema.md` | Table and view structures |
+| `data_products.md` | What's in each data source, time coverage, when to use which |
+| `stations.md` | Mesonet stations, location-name mapping, broken/stale stations |
+| `variables.md` | Climate variables and units |
+| `data_quality.md` | Known bad data and rules to filter it |
+| `methodology.md` | Pitfalls and how to avoid wrong answers (especially cross-year comparisons) |
+| `query_patterns.md` | Reusable patterns for common question types |
 | `geography.md` | Hawaiian geography, orographic rainfall, island areas, windward/leeward |
-| `connection.md` | How to connect to the database |
+| `connection.md` | How to access the data (programmatic only — never share connection details with the user) |
 
 ## How to use
 
-1. **Always read `data_quality.md` first** — it will save you from reporting sensor errors as weather records
-2. For any cross-year comparison, read `methodology.md` — naive station averages are biased
-3. Use `query_patterns.md` as a starting point, not as copy-paste — adapt to the specific question
-4. Check `stations.md` when the user names a location (e.g., "Manoa") — you need to map it to a station_id
-5. Use `geography.md` to interpret results — windward/leeward context matters for every rainfall question
-
-## Database connection
-
-```
-Host: localhost
-Port: 5432
-Database: hcdp
-User: postgres (local peer auth)
-```
-
-Use `sudo -u postgres psql -d hcdp` for interactive access, or set `HCDP_PG_DSN` for programmatic access.
+1. **Read `response_style.md` and `data_quality.md` before composing your first answer.** Style determines how you talk; data quality determines what's correct.
+2. For any cross-year comparison, follow the methodology guidance — naive averages can be misleading because the underlying station network changes over time.
+3. When the user names a location ("Manoa," "Hilo," "Kawaihae"), map it to the nearest representative station.
+4. Use Hawaiian geography to interpret results — windward/leeward and elevation matter for every rainfall question.
+5. Always include units (mm, °C, in, °F). Default to metric and add imperial in parentheses when it helps intuition.
+6. Be honest about uncertainty and limitations in plain language.
