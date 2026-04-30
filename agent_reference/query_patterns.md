@@ -35,12 +35,12 @@ WHERE station_id = '<sid>'
 
 ```sql
 SELECT date_hst, station_id, station_name, island, rainfall_mm
-FROM mv_daily_station_summary_qc
+FROM mv_daily_station_summary
 WHERE date_hst BETWEEN '<start>' AND '<end>'
   AND rainfall_mm IS NOT NULL
 ORDER BY rainfall_mm DESC;
 ```
-No manual sentinel filters needed — the _qc view handles them.
+No manual sentinel filters needed — `mv_daily_station_summary` is pre-filtered.
 
 ## Heaviest rainfall days across the network
 
@@ -48,7 +48,7 @@ No manual sentinel filters needed — the _qc view handles them.
 SELECT d.date_hst, d.station_name, d.island,
   ROUND(d.rainfall_mm::numeric, 1) AS mm,
   ROUND((d.rainfall_mm / 25.4)::numeric, 1) AS inches
-FROM mv_daily_station_summary_qc d
+FROM mv_daily_station_summary d
 WHERE d.date_hst >= '<start>'
   AND d.rainfall_mm IS NOT NULL
 ORDER BY d.rainfall_mm DESC
@@ -60,14 +60,14 @@ LIMIT 20;
 ```sql
 SELECT date_trunc('hour', timestamp) AS hour,
   ROUND(SUM(value)::numeric, 1) AS hourly_mm
-FROM v_mesonet_measurements_qc
+FROM v_mesonet_measurements
 WHERE station_id = '<sid>' AND var_id = 'RF_1_Tot300s'
   AND timestamp >= '<start>' AND timestamp < '<end>'
 GROUP BY date_trunc('hour', timestamp)
 HAVING SUM(value) > 2
 ORDER BY SUM(value) DESC;
 ```
-No manual filters needed — v_mesonet_measurements_qc excludes sentinels and range violations.
+No manual filters needed — `v_mesonet_measurements` excludes sentinels and range violations.
 
 ## Flood risk assessment (soil moisture + rainfall)
 
@@ -75,13 +75,13 @@ No manual filters needed — v_mesonet_measurements_qc excludes sentinels and ra
 WITH current_sm AS (
   SELECT DISTINCT ON (station_id)
     station_id, value AS current_vwc
-  FROM v_mesonet_measurements_qc
+  FROM v_mesonet_measurements
   WHERE var_id = 'SM_1_Avg'
   ORDER BY station_id, timestamp DESC
 ),
 recent_rain AS (
   SELECT station_id, SUM(value) AS rain_48h_mm
-  FROM v_mesonet_measurements_qc
+  FROM v_mesonet_measurements
   WHERE var_id = 'RF_1_Tot300s'
     AND timestamp >= now() - interval '48 hours'
   GROUP BY station_id
@@ -109,7 +109,7 @@ SELECT s.station_id, s.name, s.island,
   COUNT(*) AS days_with_data,
   ROUND(AVG(d.rainfall_mm)::numeric, 2) AS avg_daily_mm,
   ROUND((SUM(d.rainfall_mm) / COUNT(*) * 365)::numeric, 0) AS est_annual_mm
-FROM mv_daily_station_summary_qc d
+FROM mv_daily_station_summary d
 JOIN mesonet_stations s ON s.station_id = d.station_id
 WHERE d.rainfall_mm IS NOT NULL
 GROUP BY s.station_id, s.name, s.island, s.elevation_m
@@ -117,7 +117,7 @@ HAVING COUNT(*) > 365  -- require at least 1 year of data
 ORDER BY AVG(d.rainfall_mm) ASC  -- ASC for driest, DESC for wettest
 LIMIT 10;
 ```
-No station exclusions needed — the _qc view already handles sentinel contamination.
+No station exclusions needed — `mv_daily_station_summary` already handles sentinel contamination.
 
 ## Annual rainfall trend (with reference panel — see methodology.md)
 

@@ -17,7 +17,7 @@ These are domain words a climate scientist already uses — feel free to use the
 These belong inside your reasoning, never in the answer:
 
 - File names from this reference folder. Don't write "see `methodology.md`" or "per `data_quality.md`." If guidance from those files shapes your answer, just apply it silently.
-- Raw SQL, table names, view names, column names. Don't say "I queried `mv_monthly_station_summary_qc`," "I joined `mesonet_stations`," "from the materialized view," etc. Say what you measured and where, not what relation it was stored in.
+- Raw SQL, table names, view names, column names. Don't say "I queried `mv_monthly_station_summary`," "I joined `mesonet_stations`," "from the materialized view," etc. Say what you measured and where, not what relation it was stored in.
 - Database mechanics: "QC view," "raw view," "matview," "reference panel," "sentinel code," "network composition bias," "COOP attrition," "tipping bucket malfunction," "7999 sentinel," "kPa not hPa as a gotcha," etc. These are tools you use; the user doesn't need to know they exist.
 - PostGIS, materialized views, indexes, refresh jobs, cron, Python, rasterio, or any other software/infrastructure name.
 - "Postgres," "SQL," "the database," "the API." Just say "the data" or "HCDP."
@@ -29,12 +29,14 @@ Keep it about the **science**, not the data engineering:
 
 | Don't say | Say |
 |-----------|-----|
-| "I queried `mv_daily_station_summary_qc` for date_hst between '2026-03-01' and '2026-04-01'" | "I looked at March 2026 daily rainfall across the network." |
+| "I queried `mv_daily_station_summary` for date_hst between '2026-03-01' and '2026-04-01'" | "I looked at March 2026 daily rainfall across the network." |
 | "After excluding the 7999 sentinel codes and applying the reference panel filter…" | "After accounting for known sensor errors and station-network changes…" |
 | "JOIN with mesonet_stations on station_id" | "Mapping each reading back to its station." |
 | "I summed 12 monthly rasters from `rainfall_new_month`" | "I summed monthly rainfall grids for the year." |
 | "The materialized view contains pre-aggregated daily values" | "Daily values are already pre-computed for fast lookup." |
-| "Postgres returned 41 stations after the panel filter" | "41 stations qualified for an apples-to-apples comparison." |
+| "41 stations after the reference panel filter" | "41 stations qualified for an apples-to-apples comparison." |
+
+Identifiers like `mv_daily_station_summary` no longer contain "qc" or "raw" suffixes — the default-named views are pre-filtered. So leakage of "qc" should be rare. But raw SQL command strings will still expose names like `mesonet_measurements`, which is fine on its own (mesonet is a domain term) but should never be the focus of the answer.
 
 ## Tool call descriptions
 
@@ -43,13 +45,37 @@ When you make a tool call, the `description` field is shown to the user verbatim
 - ✗ `"Compare avg annual precip per island via mesonet matview"`
 - ✓ `"Compare average annual rainfall by island, 2024–2025"`
 
-- ✗ `"Run REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_station_summary_qc"`
+- ✗ `"Run REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_station_summary"`
 - ✓ `"Refresh daily rainfall and temperature summaries"`
 
 - ✗ `"Probe /raster endpoint with curl HEAD to validate spec"`
 - ✓ `"Check which gridded climate products are available"`
 
-If a `command` parameter contains raw SQL, that's unavoidable — but the `description` should still read as an action a climate scientist would recognize.
+If a `command` parameter contains raw SQL, that's unavoidable — but the `description` should still read as an action a climate scientist would recognize. **And if a technical identifier does appear in your prose, briefly describe what it represents** in plain language — e.g., "the daily station summary" or "the 5-minute readings table" — rather than dropping the bare name on the user.
+
+## Result formatting — prefer bullet lists over pipe tables
+
+Markdown pipe tables (with `|` and `---`) work well in rendered chat, but they read as noisy clutter when the response is consumed as plain text or piped to another agent. **For short summaries (≤5 metrics), use a bullet list with bold labels instead.** Reserve tables for actual multi-row, multi-column comparisons.
+
+**Bullet form (preferred for short summaries):**
+```
+**Maui 2025 temperature averages (23 mesonet stations):**
+
+- Daily mean: 18.7 °C (65.6 °F)
+- Average daily low: 13.9 °C (56.9 °F)
+- Average daily high: 23.2 °C (73.7 °F)
+```
+
+**Table form (use only when comparing multiple subjects):**
+```
+| Island | Avg | Min | Max |
+|--------|-----|-----|-----|
+| Maui   | 18.7 | 13.9 | 23.2 |
+| Oahu   | 23.4 | 19.8 | 27.0 |
+| ...
+```
+
+Don't use a 2-column table to show one subject's metrics — that's just a list with extra punctuation. Keep tables for actual side-by-side comparisons (year vs year, station vs station, island vs island, recent vs climatology, etc.).
 
 ## Numbers and uncertainty
 

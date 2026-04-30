@@ -129,9 +129,9 @@ FROM ingestion_log ORDER BY id DESC LIMIT 5;
 
 ## Materialized Views
 
-There are two parallel sets of matviews: **_raw** (unfiltered) and **_qc** (QC-filtered). **Always use the _qc versions for downstream analytics.** The _raw versions are preserved for QC research only.
+There are two parallel sets of materialized views: the default (filtered) and `_unfiltered` (raw). **Always use the default views for downstream analytics.** The `_unfiltered` versions are preserved for data-quality research only.
 
-### QC Filter (v_mesonet_measurements_qc)
+### v_mesonet_measurements (filter view)
 
 A non-materialized view that excludes:
 - NULL values
@@ -139,11 +139,11 @@ A non-materialized view that excludes:
 - Per-variable physical range violations (temperature -10 to 50°C, rainfall 0-500mm, humidity 0-105%, etc.)
 - Uncalibrated radiation (UC suffix) and enclosure RH are passed through unfiltered
 
-This view is the source for all _qc matviews.
+This view is the source for the default `mv_*` views.
 
 ---
 
-### mv_daily_station_summary_qc (70k+ rows) — **USE THIS ONE**
+### mv_daily_station_summary (70k+ rows) — **USE THIS ONE**
 
 Pre-aggregated daily statistics per station, QC-filtered. Safe to use without additional filtering.
 
@@ -163,23 +163,23 @@ solar_rad_avg     double precision  -- daily average solar radiation
 soil_moisture_avg double precision  -- daily average soil VWC (m³/m³)
 ```
 
-**Unique index:** idx_mv_daily_qc (station_id, date_hst)
+**Unique index:** idx_mv_daily (station_id, date_hst)
 
 ---
 
-### mv_monthly_station_summary_qc (2.4k+ rows) — **USE THIS ONE**
+### mv_monthly_station_summary (2.4k+ rows) — **USE THIS ONE**
 
 Same columns as daily but aggregated to monthly level. `month` column is first-of-month date. Sourced from the QC daily view.
 
-**Unique index:** idx_mv_monthly_qc (station_id, month)
+**Unique index:** idx_mv_monthly (station_id, month)
 
 ---
 
-### mv_daily_station_summary_raw / mv_monthly_station_summary_raw
+### mv_daily_station_summary_unfiltered / mv_monthly_station_summary_unfiltered
 
-Same structure as the _qc versions but include ALL raw values — sentinels, NULLs, range violations. **Do not use for analytics** unless you are specifically researching data quality issues.
+Same structure as the default views but include ALL raw values — sentinels, NULLs, range violations. **Do not use for analytics** unless you are specifically researching data quality issues.
 
-**Known contamination in _raw views:**
+**Known contamination in `_unfiltered` views:**
 - Station 0122 soil_moisture_avg: ~5,333 (should be ~0.54) due to 7999 sentinels
 - Station 0115 rainfall_mm: inflated in March 2023 due to 7999 sentinels
 - Station 0153 tair_min: can show -175°C due to sensor faults
