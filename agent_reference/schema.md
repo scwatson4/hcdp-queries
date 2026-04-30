@@ -129,9 +129,9 @@ FROM ingestion_log ORDER BY id DESC LIMIT 5;
 
 ## Materialized Views
 
-There are two parallel sets of materialized views: the default (filtered) and `_unfiltered` (raw). **Always use the default views for downstream analytics.** The `_unfiltered` versions are preserved for data-quality research only.
+There are two parallel sets of materialized views: `_qc` (filtered) and `_raw` (unfiltered). **Always use the `_qc` versions for downstream analytics.** The `_raw` versions are preserved for data-quality research only.
 
-### v_mesonet_measurements (filter view)
+### v_mesonet_measurements_qc (filter view)
 
 A non-materialized view that excludes:
 - NULL values
@@ -139,11 +139,11 @@ A non-materialized view that excludes:
 - Per-variable physical range violations (temperature -10 to 50°C, rainfall 0-500mm, humidity 0-105%, etc.)
 - Uncalibrated radiation (UC suffix) and enclosure RH are passed through unfiltered
 
-This view is the source for the default `mv_*` views.
+This view is the source for the `mv_*_qc` views.
 
 ---
 
-### mv_daily_station_summary (70k+ rows) — **USE THIS ONE**
+### mv_daily_station_summary_qc (70k+ rows) — **USE THIS ONE**
 
 Pre-aggregated daily statistics per station, QC-filtered. Safe to use without additional filtering.
 
@@ -167,7 +167,7 @@ soil_moisture_avg double precision  -- daily average soil VWC (m³/m³)
 
 ---
 
-### mv_monthly_station_summary (2.4k+ rows) — **USE THIS ONE**
+### mv_monthly_station_summary_qc (2.4k+ rows) — **USE THIS ONE**
 
 Same columns as daily but aggregated to monthly level. `month` column is first-of-month date. Sourced from the QC daily view.
 
@@ -175,11 +175,11 @@ Same columns as daily but aggregated to monthly level. `month` column is first-o
 
 ---
 
-### mv_daily_station_summary_unfiltered / mv_monthly_station_summary_unfiltered
+### mv_daily_station_summary_raw / mv_monthly_station_summary_raw
 
-Same structure as the default views but include ALL raw values — sentinels, NULLs, range violations. **Do not use for analytics** unless you are specifically researching data quality issues.
+Same structure as the `_qc` versions but include ALL raw values — sentinels, NULLs, range violations. **Do not use for analytics** unless you are specifically researching data quality issues.
 
-**Known contamination in `_unfiltered` views:**
+**Known contamination in `_raw` views:**
 - Station 0122 soil_moisture_avg: ~5,333 (should be ~0.54) due to 7999 sentinels
 - Station 0115 rainfall_mm: inflated in March 2023 due to 7999 sentinels
 - Station 0153 tair_min: can show -175°C due to sensor faults
@@ -191,7 +191,7 @@ Same structure as the default views but include ALL raw values — sentinels, NU
 ```
 mesonet_measurements.station_id  →  mesonet_stations.station_id
 mesonet_measurements.var_id      →  mesonet_variables.var_id
-mv_daily_station_summary.station_id  →  mesonet_stations.station_id
+mv_daily_station_summary_qc.station_id  →  mesonet_stations.station_id
 ```
 
 **historical_station_values has NO foreign key to mesonet_stations** — they use different ID systems (SKN vs mesonet 4-digit).

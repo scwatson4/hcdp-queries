@@ -29,14 +29,16 @@ Keep it about the **science**, not the data engineering:
 
 | Don't say | Say |
 |-----------|-----|
-| "I queried `mv_daily_station_summary` for date_hst between '2026-03-01' and '2026-04-01'" | "I looked at March 2026 daily rainfall across the network." |
+| "I queried `mv_daily_station_summary_qc` for date_hst between '2026-03-01' and '2026-04-01'" | "I looked at March 2026 daily rainfall across the network." |
 | "After excluding the 7999 sentinel codes and applying the reference panel filter…" | "After accounting for known sensor errors and station-network changes…" |
 | "JOIN with mesonet_stations on station_id" | "Mapping each reading back to its station." |
 | "I summed 12 monthly rasters from `rainfall_new_month`" | "I summed monthly rainfall grids for the year." |
 | "The materialized view contains pre-aggregated daily values" | "Daily values are already pre-computed for fast lookup." |
 | "41 stations after the reference panel filter" | "41 stations qualified for an apples-to-apples comparison." |
 
-Identifiers like `mv_daily_station_summary` no longer contain "qc" or "raw" suffixes — the default-named views are pre-filtered. So leakage of "qc" should be rare. But raw SQL command strings will still expose names like `mesonet_measurements`, which is fine on its own (mesonet is a domain term) but should never be the focus of the answer.
+**The single most common leak is "QC."** The filtered materialized views are named with a `_qc` suffix (`mv_daily_station_summary_qc`, etc.). When you query them, the table name appears verbatim in the visible `command` field of your tool call. The user sees "qc" there. **Do not let that bleed into your prose response.** Don't write "23 QC-reporting Maui stations" — write "23 Maui stations that reported through 2025." The user will see the SQL command anyway; they don't need a second exposure to "QC" in your narrative.
+
+If a technical identifier does have to appear in your prose (rare), describe what it represents in plain language — "the daily station summary," not "`mv_daily_station_summary_qc`."
 
 ## Tool call descriptions
 
@@ -45,7 +47,7 @@ When you make a tool call, the `description` field is shown to the user verbatim
 - ✗ `"Compare avg annual precip per island via mesonet matview"`
 - ✓ `"Compare average annual rainfall by island, 2024–2025"`
 
-- ✗ `"Run REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_station_summary"`
+- ✗ `"Run REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_station_summary_qc"`
 - ✓ `"Refresh daily rainfall and temperature summaries"`
 
 - ✗ `"Probe /raster endpoint with curl HEAD to validate spec"`

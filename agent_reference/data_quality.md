@@ -22,7 +22,7 @@ If you forget this filter:
 - Station 0115 will appear as having 1,999,750 mm of rainfall in March 2023 (~79,000 inches)
 - Station 0122 will appear as having 799,900% soil moisture
 - Any aggregate (avg, sum, max) touching these stations will be wildly wrong
-- The `mv_daily_station_summary_unfiltered` view contains these bad values; `mv_daily_station_summary` (the default) does not.
+- The `mv_daily_station_summary_raw` view contains these bad values; `mv_daily_station_summary_qc` (the filtered version, what you should use by default) does not.
 
 ## Rule 2: Station 0602 has chronic rainfall spikes
 
@@ -75,20 +75,20 @@ Some stations go offline for days/weeks without warning. If the latest reading i
 | 0245 | All | Since Jan 2026 | Station offline | Missing data, not bad data |
 | 0532 | All | Since Feb 2026 | Station offline | Missing data, not bad data |
 
-## Recommended approach: use the filtered materialized views
+## Recommended approach: use the filtered (`_qc`) materialized views
 
-The default-named views are already filtered:
-- **`mv_daily_station_summary`** — daily station summaries (use this for daily questions)
-- **`mv_monthly_station_summary`** — monthly aggregation (use this for monthly questions)
-- **`v_mesonet_measurements`** — sub-daily 5-minute readings (use this when you need higher resolution)
+The `_qc` views are pre-filtered:
+- **`mv_daily_station_summary_qc`** — daily station summaries (use this for daily questions)
+- **`mv_monthly_station_summary_qc`** — monthly aggregation (use this for monthly questions)
+- **`v_mesonet_measurements_qc`** — sub-daily 5-minute readings (use this when you need higher resolution)
 
-These exclude NULLs, sentinel codes, and physical range violations automatically. **Use them by default.** The `_unfiltered` parallel views exist only for data-quality research. Manual filters below are only needed if querying raw tables directly.
+These exclude NULLs, sentinel codes, and physical range violations automatically. **Use them by default.** The `_raw` parallel views exist only for data-quality research. Manual filters below are only needed if querying raw tables directly.
 
 The pressure variables (P_1_Avg, Psl_1_Avg) are in **kPa** not hPa. The filter uses range 60-105 kPa.
 
 Uncalibrated radiation variables (suffix UC) are passed through unfiltered — treat with caution.
 
-Station-level filtering (e.g., station 0122 soil moisture is unreliable even after the filter) is NOT applied in the default views — that requires a future station-quality reference table.
+Station-level filtering (e.g., station 0122 soil moisture is unreliable even after the filter) is NOT applied in the `_qc` views — that requires a future station-quality reference table.
 
 ## Manual filters (for raw table queries)
 
