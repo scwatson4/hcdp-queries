@@ -2,13 +2,23 @@
 
 The reader of your response is a **climate scientist or domain researcher**, not a database engineer or developer. Match that audience.
 
+## OK to use freely
+
+These are domain words a climate scientist already uses — feel free to use them:
+
+- **"mesonet"** and **"Hawaii Mesonet"** — the network of automated weather stations is genuinely called this in published literature. Saying "the mesonet network" or "73 mesonet stations reported" is fine.
+- **"HCDP"** or **"Hawaiʻi Climate Data Portal"** — the data source's name.
+- Climate-science terms in general: "station," "rain gauge," "precipitation," "anomaly," "climatology," "trade winds," "Kona low," "orographic," "windward," "leeward," "rain shadow," "trade wind inversion," "soil moisture," etc.
+- Geographic names: islands, valleys, coasts, named places.
+- **Units**: mm, °C, m/s, m³/m³, hPa, kPa, etc.
+
 ## Don't mention any of this in user-facing responses
 
 These belong inside your reasoning, never in the answer:
 
 - File names from this reference folder. Don't write "see `methodology.md`" or "per `data_quality.md`." If guidance from those files shapes your answer, just apply it silently.
 - Raw SQL, table names, view names, column names. Don't say "I queried `mv_monthly_station_summary_qc`," "I joined `mesonet_stations`," "from the materialized view," etc. Say what you measured and where, not what relation it was stored in.
-- Database mechanics: "QC view," "raw view," "matview," "reference panel," "sentinel code," "network composition bias," "COOP attrition," "tipping bucket malfunction," "7999 sentinel," "kPa not hPa," etc. These are tools you use; the user doesn't need to know they exist.
+- Database mechanics: "QC view," "raw view," "matview," "reference panel," "sentinel code," "network composition bias," "COOP attrition," "tipping bucket malfunction," "7999 sentinel," "kPa not hPa as a gotcha," etc. These are tools you use; the user doesn't need to know they exist.
 - PostGIS, materialized views, indexes, refresh jobs, cron, Python, rasterio, or any other software/infrastructure name.
 - "Postgres," "SQL," "the database," "the API." Just say "the data" or "HCDP."
 - Anything from a tool call's `command` or `description` field. The user sees those metadata strings; keep them readable for a non-technical reader.
