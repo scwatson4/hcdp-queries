@@ -8,6 +8,29 @@ No code/service/data changes. No secrets in this document.
 
 ---
 
+> ## ⚠️ CORRECTION (appended 2026-06-24, after review)
+>
+> **This report's central empirical claim is wrong as framed — it graded a stale copy.**
+> The "0 mentions / structurally blind" table below describes the *deployed* checkout at
+> `/opt/hcdp/src/jetstream2/`, which this report assumed was identical to `qgis-glue`. It was
+> **not**: the instance was running stale copies of 7 docs, ~8 commits behind. The current
+> `qgis-glue` (commits `8121e86`→`7748790`) **already contained** the completeness guard, the
+> stuck-at-zero/under-report rule (`data_quality.md` Rule 7), the network-selection guidance, the
+> always-read "four traps" in `CLAUDE.md`, a two-directional `methodology.md` Pitfall 6, and
+> `climatology_rasters` documented as a numeric `% of normal` tool (`data_products.md`).
+> So recommendations #1, #3, #4, #5 below were **already implemented before this report was written.**
+>
+> **Net:** ~80% of the flagged "gap" was a **deployment gap, not a content gap.** The fix was to
+> redeploy `qgis-glue`'s docs to the instance (done 2026-06-24: the 7 stale docs —
+> `CLAUDE.md`, `data_quality.md`, `data_products.md`, `methodology.md`, `query_patterns.md`,
+> `raster_recipes.md`, `response_style.md` — were checked out to `qgis-glue@7748790` and verified
+> present in the deployed copy). The lasting lesson is methodological: **verify the deployed
+> artifact's commit against source before grading content** — `/opt/hcdp/src` is a build artifact,
+> not the source of truth. The analysis of what *good* docs need (below) still holds; it just
+> describes work that was already done in the repo.
+
+---
+
 ## Where the agent files live (direct answer)
 
 Two copies, and the distinction matters:
